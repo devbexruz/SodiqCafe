@@ -1,0 +1,76 @@
+/* Fontlar o'zgarib ketmasligi va bir xil turishi uchun */
+html {
+  position: relative;
+  min-height: 100%;
+  font-size: 16px; /* 14px o'rniga 16px qilsangiz yozuvlar normal o'lchamda turadi */
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased; /* Yozuvlar tiniq chiqishi uchun */
+}
+
+body {
+  font-size: 1rem;
+  color: #334155;
+  background-color: #f8fafc;
+}
+/* ============================================================
+   MOBILE CARD TABLES (NO HORIZONTAL SCROLL)
+============================================================ */
+@media (max-width: 767.98px) {
+    .table-mobile-cards,
+    .table-mobile-cards thead,
+    .table-mobile-cards tbody,
+    .table-mobile-cards th,
+    .table-mobile-cards td,
+    .table-mobile-cards tr {
+        display: block;
+    }
+
+    .table-mobile-cards thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+
+    .table-mobile-cards tr {
+        background: #fff;
+        border: 1px solid #eef0f5;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        padding: 0.5rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    }
+
+    .table-mobile-cards td {
+        border: none;
+        border-bottom: 1px solid #f8f9fa;
+        padding: 6px 12px !important;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        text-align: right !important;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+        font-size: 0.9rem;
+    }
+    
+    .table-mobile-cards td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #8c98a4;
+        font-size: 0.75rem;
+        margin-right: 15px;
+        text-align: left;
+        flex-shrink: 0;
+    }
+    .table-mobile-cards .btn,
+    .table-mobile-cards .badge {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .table-responsive {
+        overflow-x: visible !important;
+        -webkit-overflow-scrolling: auto !important;
+    }
+}

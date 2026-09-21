@@ -1,0 +1,22 @@
+@{
+    ViewData["Title"] = "Ruxsat etilmagan";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 text-center">
+        <div class="card shadow border-0 p-5 rounded-4">
+            <div class="text-danger mb-3" style="font-size: 4rem;">
+                🚫
+            </div>
+            <h2 class="fw-bold text-danger">Kirish taqiqlangan (403)</h2>
+            <p class="text-muted mt-2">
+                Ushbu sahifaga yoki amalga sizda ruxsat yo'q. <br />
+                <strong>Kafe egalarini faqat tizim administratori (Admin) ro'yxatdan o'tkaza oladi.</strong>
+            </p>
+            <div class="mt-4">
+                <a asp-controller="Menyu" asp-action="Index" class="btn btn-outline-primary me-2">Menyuga qaytish</a>
+                <a asp-controller="Auth" asp-action="Login" class="btn btn-primary">Admin sifatida kirish</a>
+            </div>
+        </div>
+    </div>
+</div>

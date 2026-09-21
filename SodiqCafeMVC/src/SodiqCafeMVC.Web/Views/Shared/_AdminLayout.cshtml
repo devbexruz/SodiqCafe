@@ -1,0 +1,392 @@
+@{
+    bool isAdmin = User.IsInRole("Admin");
+}
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>@ViewData["Title"] - Boshqaruv</title>
+    <link rel="icon" type="image/png" href="~/favicon.png" />
+    
+    <!-- Bootstrap & Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --bottom-nav-height: 65px;
+            --brand: #0d6efd;
+            --brand-2: #6610f2;
+            --brand-grad: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+            --sidebar-bg: #111827; /* Dark theme for premium feel */
+            --sidebar-hover: rgba(255, 255, 255, 0.1);
+            --sidebar-active: var(--brand-grad);
+            --sidebar-text: #9ca3af;
+            --sidebar-text-active: #ffffff;
+        }
+
+        body {
+            background-color: #f3f4f6;
+            font-family: 'Inter', -apple-system, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ---------------------------------------------------
+            DESKTOP SIDEBAR
+        ----------------------------------------------------- */
+        .admin-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            z-index: 1040;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.05);
+        }
+
+        .sidebar-brand {
+            height: 70px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #fff;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .sidebar-brand:hover {
+            color: #fff;
+        }
+        
+        .sidebar-brand .brand-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: var(--brand-grad);
+            border-radius: 8px;
+            margin-right: 12px;
+            font-size: 1rem;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .nav-item-admin {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: var(--sidebar-text);
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            gap: 12px;
+        }
+
+        .nav-item-admin i {
+            font-size: 1.2rem;
+            transition: transform 0.2s;
+        }
+
+        .nav-item-admin:hover {
+            background-color: var(--sidebar-hover);
+            color: var(--sidebar-text-active);
+        }
+        
+        .nav-item-admin:hover i {
+            transform: scale(1.1);
+        }
+
+        .nav-item-admin.active {
+            background: var(--sidebar-active);
+            color: var(--sidebar-text-active);
+            box-shadow: 0 4px 15px rgba(13, 110, 253, 0.4);
+        }
+
+        .sidebar-footer {
+            padding: 15px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .admin-main-content {
+            margin-left: var(--sidebar-width);
+            padding: 30px;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        .admin-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            padding: 15px 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            margin-bottom: 30px;
+        }
+
+        .admin-topbar .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        /* ---------------------------------------------------
+            MOBILE BOTTOM NAVIGATION
+        ----------------------------------------------------- */
+        .mobile-bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: var(--bottom-nav-height);
+            background: #fff;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+            z-index: 1050;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .mobile-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            text-decoration: none;
+            width: 100%;
+            height: 100%;
+            font-size: 0.7rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        
+        .mobile-nav-item i {
+            font-size: 1.3rem;
+            margin-bottom: 2px;
+        }
+
+        .mobile-nav-item.active {
+            color: var(--brand);
+        }
+
+        /* Mobile topbar (for branding on mobile) */
+        .mobile-topbar {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            z-index: 1040;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+        }
+
+        .mobile-topbar .brand-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: var(--brand-grad);
+            border-radius: 8px;
+            font-size: 1rem;
+            color: white;
+            text-decoration: none;
+        }
+
+        @@media (max-width: 768px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+            }
+            .admin-main-content {
+                margin-left: 0;
+                padding: 15px;
+                padding-top: 80px; /* Space for mobile topbar */
+                padding-bottom: calc(var(--bottom-nav-height) + 20px + env(safe-area-inset-bottom));
+            }
+            .admin-topbar {
+                display: none; /* Hide desktop topbar */
+            }
+            .mobile-bottom-nav {
+                display: flex;
+            }
+            .mobile-topbar {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Desktop Sidebar -->
+    <aside class="admin-sidebar">
+        <a asp-controller="Home" asp-action="Index" class="sidebar-brand">
+            <div class="brand-icon" style="background: transparent;"><img src="~/favicon.png" alt="Logo" style="width: 100%; height: 100%; object-fit: contain;" /></div>
+            SodiqCafe
+        </a>
+        
+        <nav class="sidebar-nav">
+            @if (isAdmin)
+            {
+                <a asp-controller="Admin" asp-action="Owners" class="nav-item-admin @(ViewContext.RouteData.Values["Action"]?.ToString() == "Owners" ? "active" : "")">
+                    <i class="bi bi-person-badge"></i> Egalar
+                </a>
+                <a asp-controller="Admin" asp-action="Cafes" class="nav-item-admin @(ViewContext.RouteData.Values["Action"]?.ToString() == "Cafes" ? "active" : "")">
+                    <i class="bi bi-buildings"></i> Kafelar
+                </a>
+                <a asp-controller="Admin" asp-action="Invoices" class="nav-item-admin @(ViewContext.RouteData.Values["Action"]?.ToString() == "Invoices" ? "active" : "")">
+                    <i class="bi bi-receipt"></i> Invoyslar
+                </a>
+
+                <a asp-controller="Admin" asp-action="Sessions" class="nav-item-admin @(ViewContext.RouteData.Values["Action"]?.ToString() == "Sessions" ? "active" : "")">
+                    <i class="bi bi-shield-lock"></i> Sessiyalar
+                </a>
+            }
+            else
+            {
+                <a asp-controller="CafeOwner" asp-action="Dashboard" class="nav-item-admin @(ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "active" : "")">
+                    <i class="bi bi-grid-1x2"></i> Panel
+                </a>
+                <a asp-controller="CafeOwner" asp-action="Products" class="nav-item-admin @(ViewContext.RouteData.Values["Action"]?.ToString() == "Products" ? "active" : "")">
+                    <i class="bi bi-cup-hot"></i> Menyu
+                </a>
+                <a asp-controller="CafeOwner" asp-action="BonusCampaigns" class="nav-item-admin @(ViewContext.RouteData.Values["Action"]?.ToString() == "BonusCampaigns" ? "active" : "")">
+                    <i class="bi bi-gift"></i> Aksiyalar
+                </a>
+                <a asp-controller="CafeOwner" asp-action="Queue" class="nav-item-admin @(ViewContext.RouteData.Values["Action"]?.ToString() == "Queue" ? "active" : "")">
+                    <i class="bi bi-people"></i> Navbat
+                </a>
+                <a asp-controller="CafeOwner" asp-action="Invoices" class="nav-item-admin @(ViewContext.RouteData.Values["Action"]?.ToString() == "Invoices" ? "active" : "")">
+                    <i class="bi bi-receipt"></i> Invoyslar
+                </a>
+
+            }
+        </nav>
+
+        <div class="sidebar-footer">
+            @if (isAdmin)
+            {
+                <a asp-controller="Admin" asp-action="Settings" class="nav-item-admin @(ViewContext.RouteData.Values["Action"]?.ToString() == "Settings" ? "active" : "")">
+                    <i class="bi bi-gear"></i> Sozlamalar
+                </a>
+            }
+            else
+            {
+                <a asp-controller="CafeOwner" asp-action="Settings" class="nav-item-admin @(ViewContext.RouteData.Values["Action"]?.ToString() == "Settings" ? "active" : "")">
+                    <i class="bi bi-gear"></i> Sozlamalar
+                </a>
+            }
+        </div>
+    </aside>
+
+    <!-- Mobile Topbar -->
+    <div class="mobile-topbar">
+        <a asp-controller="Home" asp-action="Index" class="brand-icon" style="background: transparent;"><img src="~/favicon.png" alt="Logo" style="width: 100%; height: 100%; object-fit: contain;" /></a>
+        <span class="fw-bold fs-5">Boshqaruv</span>
+        @if (isAdmin)
+        {
+            <a asp-controller="Admin" asp-action="Settings" class="text-primary fs-4"><i class="bi bi-person-circle"></i></a>
+        }
+        else
+        {
+            <a asp-controller="CafeOwner" asp-action="Settings" class="text-primary fs-4"><i class="bi bi-person-circle"></i></a>
+        }
+    </div>
+
+    <!-- Main Content -->
+    <main class="admin-main-content">
+        <!-- Desktop Topbar -->
+        <div class="admin-topbar">
+            <h4 class="mb-0 fw-bold text-dark">@ViewData["Title"]</h4>
+            <div class="user-info">
+                <i class="bi bi-person-circle fs-4 text-primary"></i>
+                <span>@User.Identity?.Name</span>
+            </div>
+        </div>
+
+        <!-- Render Body -->
+        @RenderBody()
+    </main>
+
+    <!-- Mobile Bottom Nav -->
+    <nav class="mobile-bottom-nav">
+        @if (isAdmin)
+        {
+            <a asp-controller="Admin" asp-action="Owners" class="mobile-nav-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "Owners" ? "active" : "")">
+                <i class="bi bi-person-badge"></i>
+                <span>Egalar</span>
+            </a>
+            <a asp-controller="Admin" asp-action="Cafes" class="mobile-nav-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "Cafes" ? "active" : "")">
+                <i class="bi bi-buildings"></i>
+                <span>Kafelar</span>
+            </a>
+            <a asp-controller="Admin" asp-action="Invoices" class="mobile-nav-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "Invoices" ? "active" : "")">
+                <i class="bi bi-receipt"></i>
+                <span>Invoyslar</span>
+            </a>
+
+            <a asp-controller="Admin" asp-action="Sessions" class="mobile-nav-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "Sessions" ? "active" : "")">
+                <i class="bi bi-shield-lock"></i>
+                <span>Sessiyalar</span>
+            </a>
+        }
+        else
+        {
+            <a asp-controller="CafeOwner" asp-action="Dashboard" class="mobile-nav-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "active" : "")">
+                <i class="bi bi-grid-1x2"></i>
+                <span>Panel</span>
+            </a>
+            <a asp-controller="CafeOwner" asp-action="Products" class="mobile-nav-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "Products" ? "active" : "")">
+                <i class="bi bi-cup-hot"></i>
+                <span>Menyu</span>
+            </a>
+            <a asp-controller="CafeOwner" asp-action="BonusCampaigns" class="mobile-nav-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "BonusCampaigns" ? "active" : "")">
+                <i class="bi bi-gift"></i>
+                <span>Aksiyalar</span>
+            </a>
+            <a asp-controller="CafeOwner" asp-action="Queue" class="mobile-nav-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "Queue" ? "active" : "")">
+                <i class="bi bi-people"></i>
+                <span>Navbat</span>
+            </a>
+            <a asp-controller="CafeOwner" asp-action="Invoices" class="mobile-nav-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "Invoices" ? "active" : "")">
+                <i class="bi bi-receipt"></i>
+                <span>Invoyslar</span>
+            </a>
+
+        }
+    </nav>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,197 @@
+@model List<SodiqCafeMVC.Domain.Entities.Product>
+
+@{
+    ViewData["Title"] = "Shablon Mahsulotlar (Admin)";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">🛠 Shablon Mahsulotlar</h2>
+            <p class="text-muted mb-0">Kafe egalari menyuga oson qo'shishi uchun default tayyor shablonlarni boshqarish</p>
+        </div>
+        <a asp-action="Cafes" class="btn btn-outline-secondary">← Kafelarga qaytish</a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm rounded-3">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row g-4">
+        <!-- Add new template form -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 position-sticky" style="top: 100px;">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="fw-bold mb-0">➕ Yangi shablon qo'shish</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="AddTemplate" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        
+                        <div class="mb-3 text-center">
+                            <label class="form-label fw-semibold d-block">Rasm yuklash:</label>
+                            <div class="border rounded p-3 bg-light" style="cursor:pointer;" onclick="document.getElementById('templateImage').click()">
+                                <i class="bi bi-cloud-arrow-up fs-2 text-primary"></i>
+                                <div class="small mt-1 text-muted">Kattalashtirish uchun bosing (ixtiyoriy)</div>
+                            </div>
+                            <input type="file" name="imageFile" id="templateImage" class="d-none" accept="image/*" />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Nomi:</label>
+                            <input type="text" name="name" class="form-control" placeholder="Masalan: Qora choy" required />
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Kategoriya:</label>
+                            <select name="category" class="form-select" required>
+                                @foreach (var cat in Enum.GetValues(typeof(SodiqCafeMVC.Domain.Enums.ProductCategory)))
+                                {
+                                    <option value="@cat">@(((System.ComponentModel.DataAnnotations.DisplayAttribute?)cat.GetType().GetField(cat.ToString()!)?.GetCustomAttributes(typeof(System.ComponentModel.DataAnnotations.DisplayAttribute), false).FirstOrDefault())?.Name ?? cat.ToString())</option>
+                                }
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Tavsiya etilgan narx (so'mda):</label>
+                            <input type="number" name="price" class="form-control" placeholder="Masalan: 5000" required min="0" step="500" />
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 fw-bold">Shablonni Saqlash</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Templates List -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0">Tayyor Shablonlar</h5>
+                    <span class="badge bg-primary rounded-pill">Jami: @Model.Count</span>
+                </div>
+                <div class="card-body p-0">
+                    @if (!Model.Any())
+                    {
+                        <div class="text-center py-5 text-muted">
+                            <p>Hozircha hech qanday shablon kiritilmagan.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-4">Rasm</th>
+                                        <th>Nomi</th>
+                                        <th>Kategoriya</th>
+                                        <th>Tavsiya Narx</th>
+                                        <th class="text-end pe-4">Amal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model)
+                                    {
+                                        var categoryName = ((System.ComponentModel.DataAnnotations.DisplayAttribute?)item.Category.GetType().GetField(item.Category.ToString()!)?.GetCustomAttributes(typeof(System.ComponentModel.DataAnnotations.DisplayAttribute), false).FirstOrDefault())?.Name ?? item.Category.ToString();
+                                        <tr>
+                                            <td class="ps-4">
+                                                @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                                {
+                                                    <img src="@item.ImageUrl" alt="@item.Name" class="rounded" style="width: 50px; height: 50px; object-fit: cover;" />
+                                                }
+                                                else
+                                                {
+                                                    <div class="bg-light rounded d-flex align-items-center justify-content-center text-muted" style="width: 50px; height: 50px;">
+                                                        <i class="bi bi-image fs-4"></i>
+                                                    </div>
+                                                }
+                                            </td>
+                                            <td class="fw-bold">@item.Name</td>
+                                            <td>
+                                                <span class="badge bg-light text-dark border">@categoryName</span>
+                                            </td>
+                                            <td class="text-success fw-bold">@item.Price.ToString("N0")</td>
+                                            <td class="text-end pe-4">
+                                                <div class="d-flex justify-content-end gap-2">
+                                                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editModal-@item.Id">
+                                                        ✏️ Tahrirlash
+                                                    </button>
+                                                    <form asp-action="DeleteTemplate" method="post" onsubmit="return confirm('Haqiqatan ham ushbu shablonni o\'chirasizmi?');">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="templateId" value="@item.Id" />
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger">🗑 O'chirish</button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Edit Modal -->
+                                        <div class="modal fade" id="editModal-@item.Id" tabindex="-1" aria-labelledby="editModalLabel-@item.Id" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="editModalLabel-@item.Id">✏️ Shablonni Tahrirlash</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <form asp-action="EditTemplate" method="post" enctype="multipart/form-data">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="templateId" value="@item.Id" />
+                                                        <div class="modal-body text-start">
+                                                            <div class="mb-3 text-center">
+                                                                <label class="form-label fw-semibold d-block">Yangi rasm yuklash (ixtiyoriy):</label>
+                                                                @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                                                {
+                                                                    <div class="mb-2">
+                                                                        <img src="@item.ImageUrl" alt="Joriy rasm" class="rounded border" style="width: 80px; height: 80px; object-fit: cover;" />
+                                                                    </div>
+                                                                }
+                                                                <input type="file" name="imageFile" class="form-control form-control-sm" accept="image/*" />
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label class="form-label fw-semibold">Nomi:</label>
+                                                                <input type="text" name="name" class="form-control" value="@item.Name" required />
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label class="form-label fw-semibold">Kategoriya:</label>
+                                                                <select name="category" class="form-select" required>
+                                                                    @foreach (var cat in Enum.GetValues(typeof(SodiqCafeMVC.Domain.Enums.ProductCategory)))
+                                                                    {
+                                                                        if ((SodiqCafeMVC.Domain.Enums.ProductCategory)cat == item.Category)
+                                                                        {
+                                                                            <option value="@cat" selected>@(((System.ComponentModel.DataAnnotations.DisplayAttribute?)cat.GetType().GetField(cat.ToString()!)?.GetCustomAttributes(typeof(System.ComponentModel.DataAnnotations.DisplayAttribute), false).FirstOrDefault())?.Name ?? cat.ToString())</option>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <option value="@cat">@(((System.ComponentModel.DataAnnotations.DisplayAttribute?)cat.GetType().GetField(cat.ToString()!)?.GetCustomAttributes(typeof(System.ComponentModel.DataAnnotations.DisplayAttribute), false).FirstOrDefault())?.Name ?? cat.ToString())</option>
+                                                                        }
+                                                                    }
+                                                                </select>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label class="form-label fw-semibold">Tavsiya etilgan narx (so'mda):</label>
+                                                                <input type="number" name="price" class="form-control" value="@item.Price" required min="0" step="500" />
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Bekor qilish</button>
+                                                            <button type="submit" class="btn btn-primary fw-bold">Saqlash</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

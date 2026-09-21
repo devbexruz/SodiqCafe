@@ -1,0 +1,122 @@
+@model List<SodiqCafeMVC.Domain.Entities.BonusCampaign>
+
+@{
+    ViewData["Title"] = "Mijozga xizmat ko'rsatish";
+    Layout = "_AdminLayout";
+    
+    var request = ViewBag.Request as SodiqCafeMVC.Domain.Entities.ServiceRequest;
+    var isNewCustomer = (bool)ViewBag.IsNewCustomer;
+    var daysSinceLastVisit = (double)ViewBag.DaysSinceLastVisit;
+    var userProgresses = ViewBag.UserProgresses as List<SodiqCafeMVC.Domain.Entities.UserCampaignProgress> ?? new List<SodiqCafeMVC.Domain.Entities.UserCampaignProgress>();
+}
+
+<div class="mb-4">
+    <a asp-action="Queue" class="btn btn-outline-secondary btn-sm mb-3">← Navbatga qaytish</a>
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold mb-1">Mijoz: @request?.User?.Username</h2>
+            <p class="text-muted mb-0">Buyurtma raqami: <strong class="text-primary fs-5">#@request?.DailyOrderNumber</strong></p>
+        </div>
+        <div class="text-end">
+            @if (isNewCustomer)
+            {
+                <span class="badge bg-success fs-6"><i class="bi bi-star-fill"></i> Yangi Mijoz!</span>
+            }
+            else if (daysSinceLastVisit > 30)
+            {
+                <span class="badge bg-warning text-dark fs-6"><i class="bi bi-clock-history"></i> Uzoq tanaffusdan keyin qaytdi (@Math.Round(daysSinceLastVisit) kun)</span>
+            }
+            else
+            {
+                <span class="badge bg-info text-dark fs-6">Doimiy mijoz</span>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white py-3 border-bottom">
+                <h5 class="fw-bold mb-0">Tavsiya etilgan Bonuslar va Aksiyalar</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="IssueBonus" method="post" id="issueForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="requestId" value="@request?.Id" />
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Xarid summasi (so'mda, ixtiyoriy)</label>
+                        <input type="number" name="totalAmount" class="form-control" placeholder="0" min="0" />
+                    </div>
+
+                    <h6 class="fw-bold mb-3 text-primary">Aksiyalarni belgilang (ixtiyoriy):</h6>
+                    
+                    @if (!Model.Any())
+                    {
+                        <p class="text-muted">Faol aksiyalar mavjud emas.</p>
+                    }
+                    else
+                    {
+                        <div class="list-group">
+                            @foreach (var campaign in Model)
+                            {
+                                bool isRecommended = false;
+                                string recReason = "";
+
+                                if (campaign.Type == SodiqCafeMVC.Domain.Enums.BonusType.NewCustomer && isNewCustomer)
+                                {
+                                    isRecommended = true;
+                                    recReason = "Yangi mijoz uchun tavsiya etiladi";
+                                }
+                                else if (campaign.Type == SodiqCafeMVC.Domain.Enums.BonusType.ReturningCustomer && daysSinceLastVisit >= (double)campaign.ConditionValue)
+                                {
+                                    isRecommended = true;
+                                    recReason = $"{campaign.ConditionValue} kundan beri kelmagani uchun tavsiya etiladi";
+                                }
+                                else if (campaign.Type == SodiqCafeMVC.Domain.Enums.BonusType.StampCard)
+                                {
+                                    isRecommended = true; // Har xaridda katakcha qo'shish tavsiya qilinadi
+                                }
+
+                                var progress = userProgresses.FirstOrDefault(p => p.BonusCampaignId == campaign.Id);
+                                int currentStamp = progress?.CurrentValue ?? 0;
+
+                                <label class="list-group-item d-flex justify-content-between align-items-center p-3 @(isRecommended ? "bg-light border-primary" : "")">
+                                    <div class="d-flex align-items-center">
+                                        <input class="form-check-input me-3 fs-4" type="checkbox" name="selectedCampaignIds" value="@campaign.Id" @(isRecommended ? "checked" : "")>
+                                        <div>
+                                            <h6 class="mb-0 fw-bold">@campaign.Name</h6>
+                                            <div class="small text-muted">@campaign.RewardDescription</div>
+                                            @if (isRecommended && !string.IsNullOrEmpty(recReason))
+                                            {
+                                                <div class="small text-success fw-semibold"><i class="bi bi-check-circle"></i> @recReason</div>
+                                            }
+                                        </div>
+                                    </div>
+                                    @if (campaign.Type == SodiqCafeMVC.Domain.Enums.BonusType.StampCard)
+                                    {
+                                        <div class="text-end">
+                                            <div class="badge bg-secondary mb-1">Katakchalar holati</div>
+                                            <div class="fw-bold fs-5 text-primary">@currentStamp / @campaign.ConditionValue</div>
+                                            @if (currentStamp + 1 >= campaign.ConditionValue)
+                                            {
+                                                <div class="text-danger small fw-bold mt-1">Bu safar bonus yutadi!</div>
+                                            }
+                                        </div>
+                                    }
+                                </label>
+                            }
+                        </div>
+                    }
+
+                    <div class="mt-4 pt-3 border-top text-end">
+                        <button type="submit" class="btn btn-success btn-lg fw-bold px-5">
+                            ✅ Xizmatni yakunlash va Bonuslarni taqdim etish
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

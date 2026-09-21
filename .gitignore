@@ -1,0 +1,23 @@
+## .NET Core
+[Bb]in/
+[Oo]bj/
+*.user
+*.userosscache
+*.sln.docstates
+
+## Database
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+## Visual Studio / VS Code
+.vscode/
+.vs/
+*.suo
+*.user
+*.userprefs
+
+## OS generated files
+.DS_Store
+Thumbs.db

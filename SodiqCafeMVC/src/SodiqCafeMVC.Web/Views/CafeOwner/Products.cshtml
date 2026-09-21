@@ -1,0 +1,486 @@
+@model List<SodiqCafeMVC.Domain.Entities.Product>
+
+@{
+    ViewData["Title"] = "Menyu";
+    var defaultTemplates = ViewBag.DefaultTemplates as List<SodiqCafeMVC.Domain.Entities.Product> ?? new List<SodiqCafeMVC.Domain.Entities.Product>();
+}
+
+<style>
+    .mobile-page-container {
+        padding-top: 1rem;
+        padding-bottom: 6rem;
+    }
+
+    .glass-header {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+        margin-bottom: 1.5rem;
+    }
+
+    .product-card {
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.04);
+        background: #ffffff;
+        transition: transform 0.2s, box-shadow 0.2s;
+        overflow: hidden;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        position: relative;
+    }
+    
+    .product-card:active {
+        transform: scale(0.98);
+    }
+
+    .product-image {
+        width: 80px;
+        height: 80px;
+        border-radius: 16px;
+        object-fit: cover;
+        background-color: #f3f4f6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: #9ca3af;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+
+    .product-info {
+        flex-grow: 1;
+        min-width: 0;
+    }
+
+    .product-title {
+        font-weight: 800;
+        font-size: 1.1rem;
+        color: #1f2937;
+        margin-bottom: 0.25rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .product-price {
+        font-weight: 700;
+        color: #10b981;
+        font-size: 1.1rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        transition: background-color 0.2s;
+    }
+    
+    .btn-edit { background-color: rgba(13, 110, 253, 0.1); color: #0d6efd; }
+    .btn-edit:hover { background-color: #0d6efd; color: white; }
+    .btn-delete { background-color: rgba(220, 53, 69, 0.1); color: #dc3545; }
+    .btn-delete:hover { background-color: #dc3545; color: white; }
+
+    .fab-btn {
+        position: fixed;
+        bottom: 85px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+        border-radius: 30px;
+        background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        box-shadow: 0 10px 25px rgba(13, 110, 253, 0.4);
+        z-index: 1040;
+        border: none;
+        transition: transform 0.2s;
+    }
+    .fab-btn:active { transform: scale(0.9); }
+
+    .category-badge {
+        font-size: 0.7rem;
+        padding: 4px 10px;
+        border-radius: 10px;
+        background: #f3f4f6;
+        color: #4b5563;
+        font-weight: 600;
+        display: inline-block;
+        margin-bottom: 5px;
+    }
+</style>
+
+<div class="container mobile-page-container">
+    <div class="glass-header d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="h5 fw-bold mb-1 text-dark">🍔 Menyuni Boshqarish</h1>
+            <p class="text-muted small mb-0">Kafe mahsulotlarini sozlash</p>
+        </div>
+        <button class="btn btn-light text-primary fw-bold shadow-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#addFromTemplateModal">
+            <i class="bi bi-list-stars me-1"></i> Shablon
+        </button>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm rounded-4 border-0 mb-4">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <div class="fs-1 mb-3">🍽️</div>
+            <h5 class="text-muted fw-bold mb-3">Hozircha menyuda mahsulotlar yo'q</h5>
+            <p class="text-muted small">Qo'shish tugmasini bosib yangi mahsulot kiritishingiz mumkin.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+            @foreach (var item in Model)
+            {
+                var categoryName = ((System.ComponentModel.DataAnnotations.DisplayAttribute?)item.Category.GetType().GetField(item.Category.ToString()!)?.GetCustomAttributes(typeof(System.ComponentModel.DataAnnotations.DisplayAttribute), false).FirstOrDefault())?.Name ?? item.Category.ToString();
+                
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="product-card">
+                        @if (!string.IsNullOrEmpty(item.ImageUrl))
+                        {
+                            <img src="@item.ImageUrl" alt="@item.Name" class="product-image" />
+                        }
+                        else
+                        {
+                            <div class="product-image"><i class="bi bi-image"></i></div>
+                        }
+                        
+                        <div class="product-info">
+                            <span class="category-badge">@categoryName</span>
+                            <div class="product-title">@item.Name</div>
+                            <div class="product-price">@item.Price.ToString("N0") UZS</div>
+                        </div>
+                        
+                        <div class="action-buttons ms-3">
+                            <button class="action-btn btn-edit"
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#editProductModal"
+                                    data-id="@item.Id"
+                                    data-name="@item.Name"
+                                    data-price="@item.Price"
+                                    data-desc="@item.Description"
+                                    data-recommended="@(item.IsRecommended ? "true" : "false")"
+                                    data-category="@item.Category"
+                                    data-image="@item.ImageUrl">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                            <form asp-action="DeleteProduct" method="post" onsubmit="return confirm('Rostdan ham o\'chirmoqchimisiz?');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="productId" value="@item.Id" />
+                                <button type="submit" class="action-btn btn-delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- Floating Action Button for adding custom product -->
+    <button class="fab-btn" data-bs-toggle="modal" data-bs-target="#addCustomProductModal">
+        <i class="bi bi-plus-lg"></i>
+    </button>
+</div>
+
+<!-- Add Custom Product Modal -->
+<div class="modal fade" id="addCustomProductModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <form asp-action="AddProduct" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                
+                <div class="modal-header bg-light border-bottom-0 rounded-top-4">
+                    <h5 class="modal-title fw-bold">Yangi mahsulot</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                
+                <div class="modal-body p-4 text-center">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold d-block">Rasmni yuklang</label>
+                        <div class="border rounded-4 p-4 bg-light d-inline-block shadow-sm" style="cursor:pointer;" onclick="document.getElementById('newProductImage').click()">
+                            <i class="bi bi-camera fs-1 text-primary"></i>
+                        </div>
+                        <input type="file" name="imageFile" id="newProductImage" class="d-none" accept="image/*" />
+                    </div>
+                    
+                    <div class="mb-3 text-start">
+                        <label class="form-label fw-bold text-muted small text-uppercase">Nomi</label>
+                        <input type="text" class="form-control form-control-lg border-0 bg-light rounded-3" name="name" required placeholder="Masalan: Lavash" />
+                    </div>
+                    
+                    <div class="mb-3 text-start">
+                        <label class="form-label fw-bold text-muted small text-uppercase">Kategoriya</label>
+                        <select name="category" class="form-select form-select-lg border-0 bg-light rounded-3" required>
+                            @foreach (var cat in Enum.GetValues(typeof(SodiqCafeMVC.Domain.Enums.ProductCategory)))
+                            {
+                                <option value="@cat">@(((System.ComponentModel.DataAnnotations.DisplayAttribute?)cat.GetType().GetField(cat.ToString()!)?.GetCustomAttributes(typeof(System.ComponentModel.DataAnnotations.DisplayAttribute), false).FirstOrDefault())?.Name ?? cat.ToString())</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3 text-start">
+                        <label class="form-label fw-bold text-muted small text-uppercase">Narxi (UZS)</label>
+                        <input type="number" class="form-control form-control-lg border-0 bg-light rounded-3" name="price" required min="0" step="500" placeholder="25000" />
+                    </div>
+
+                    <div class="mb-3 text-start">
+                        <label class="form-label fw-bold text-muted small text-uppercase">Izoh (Taomlar uchun)</label>
+                        <textarea class="form-control border-0 bg-light rounded-3" name="description" rows="2" placeholder="Masalan: Mol go'shtidan tayyorlangan mazali bifshteks"></textarea>
+                    </div>
+                    <div class="mb-3 text-start form-check">
+                        <input class="form-check-input" type="checkbox" name="isRecommended" value="true" id="isRecommendedAdd">
+                        <label class="form-check-label fw-bold" for="isRecommendedAdd">
+                            ⭐ Tavsiya etiladi (Mijozlar menyusida alohida ajralib turadi)
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="modal-footer border-0 pb-4 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Bekor qilish</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">Qo'shish</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Product Modal -->
+<div class="modal fade" id="editProductModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <form asp-action="EditProduct" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="productId" id="editProductId" value="" />
+                
+                <div class="modal-header bg-light border-bottom-0 rounded-top-4">
+                    <h5 class="modal-title fw-bold">Tahrirlash</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                
+                <div class="modal-body p-4 text-center">
+                    <div class="mb-4">
+                        <img id="editProductImagePreview" src="" alt="Preview" class="rounded-4 mb-3 d-none shadow-sm" style="width: 100px; height: 100px; object-fit: cover;" />
+                        <div class="border rounded-4 p-3 bg-light d-inline-block shadow-sm" style="cursor:pointer;" onclick="document.getElementById('editProductImage').click()">
+                            <i class="bi bi-camera fs-3 text-primary"></i>
+                        </div>
+                        <input type="file" name="imageFile" id="editProductImage" class="d-none" accept="image/*" />
+                    </div>
+                    
+                    <div class="mb-3 text-start">
+                        <label class="form-label fw-bold text-muted small text-uppercase">Nomi</label>
+                        <input type="text" class="form-control form-control-lg border-0 bg-light rounded-3" name="name" id="editProductName" required />
+                    </div>
+                    
+                    <div class="mb-3 text-start">
+                        <label class="form-label fw-bold text-muted small text-uppercase">Kategoriya</label>
+                        <select name="category" id="editProductCategory" class="form-select form-select-lg border-0 bg-light rounded-3" required>
+                            @foreach (var cat in Enum.GetValues(typeof(SodiqCafeMVC.Domain.Enums.ProductCategory)))
+                            {
+                                <option value="@cat">@(((System.ComponentModel.DataAnnotations.DisplayAttribute?)cat.GetType().GetField(cat.ToString()!)?.GetCustomAttributes(typeof(System.ComponentModel.DataAnnotations.DisplayAttribute), false).FirstOrDefault())?.Name ?? cat.ToString())</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3 text-start">
+                        <label class="form-label fw-bold text-muted small text-uppercase">Narxi (UZS)</label>
+                        <input type="number" class="form-control form-control-lg border-0 bg-light rounded-3" name="price" id="editProductPrice" required min="0" step="500" />
+                    </div>
+
+                    <div class="mb-3 text-start">
+                        <label class="form-label fw-bold text-muted small text-uppercase">Izoh</label>
+                        <textarea class="form-control border-0 bg-light rounded-3" name="description" id="editProductDesc" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3 text-start form-check">
+                        <input class="form-check-input" type="checkbox" name="isRecommended" value="true" id="editProductRecommended">
+                        <label class="form-check-label fw-bold" for="editProductRecommended">
+                            ⭐ Tavsiya etiladi
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="modal-footer border-0 pb-4 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Bekor qilish</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">Saqlash</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Product From Template Modal -->
+<div class="modal fade" id="addFromTemplateModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header bg-light border-bottom-0 rounded-top-4">
+                <h5 class="modal-title fw-bold">Shablondan qo'shish</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4 bg-light">
+                <p class="text-muted mb-4 small px-2">Kafeda eng ko'p sotiladigan tayyor mahsulotlardan birini tanlang</p>
+                
+                <div class="row g-3 px-2">
+                    @foreach (var template in defaultTemplates)
+                    {
+                        var tCategoryName = ((System.ComponentModel.DataAnnotations.DisplayAttribute?)template.Category.GetType().GetField(template.Category.ToString()!)?.GetCustomAttributes(typeof(System.ComponentModel.DataAnnotations.DisplayAttribute), false).FirstOrDefault())?.Name ?? template.Category.ToString();
+                        <div class="col-6 col-md-4">
+                            <div class="card h-100 border-0 shadow-sm rounded-4 template-card cursor-pointer" onclick="selectTemplate(@template.Id, '@template.Name', @template.Price, '@template.ImageUrl', '@tCategoryName')">
+                                <div class="card-body text-center p-3">
+                                    <div class="mb-3">
+                                        @if (!string.IsNullOrEmpty(template.ImageUrl))
+                                        {
+                                            <img src="@template.ImageUrl" alt="@template.Name" class="rounded-circle shadow-sm" style="width: 70px; height: 70px; object-fit: cover;" />
+                                        }
+                                        else
+                                        {
+                                            <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center text-primary mx-auto" style="width: 70px; height: 70px;">
+                                                <i class="bi bi-image fs-3"></i>
+                                            </div>
+                                        }
+                                    </div>
+                                    <h6 class="fw-bold mb-1 fs-6">@template.Name</h6>
+                                    <div class="text-success small fw-bold">~@template.Price.ToString("N0")</div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    
+                    @if (!defaultTemplates.Any())
+                    {
+                        <div class="col-12 text-center text-muted p-4">
+                            Tizimda tayyor shablonlar topilmadi.
+                        </div>
+                    }
+                </div>
+
+                <!-- Hidden form for submission -->
+                <form id="templateSubmitForm" asp-action="AddProductFromTemplate" method="post" class="d-none mt-4 p-4 bg-white rounded-4 shadow-sm border-0 mx-2">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="templateId" id="selectedTemplateId" value="" />
+                    
+                    <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
+                        <div class="me-3" id="selectedTemplateImageContainer">
+                            <img id="selectedTemplateImage" src="" class="rounded-3 shadow-sm d-none" style="width: 60px; height: 60px; object-fit: cover;" />
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-1" id="selectedTemplateName">Nomi</h5>
+                            <span class="badge bg-light text-dark" id="selectedTemplateCategory">Kategoriya</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4 text-start">
+                        <label class="form-label fw-bold text-muted small text-uppercase">Sizning narxingiz (UZS)</label>
+                        <input type="number" class="form-control form-control-lg bg-light border-0" name="customPrice" id="customPriceInput" required min="0" step="500" />
+                    </div>
+                    
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-light rounded-pill px-4" onclick="cancelTemplateSelection()">Bekor qilish</button>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">Menyuga qo'shish</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .template-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .template-card:hover, .template-card:active {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(13, 110, 253, 0.15) !important;
+    }
+    .cursor-pointer {
+        cursor: pointer;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        document.getElementById('editProductModal').addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var id = button.getAttribute('data-id');
+            var name = button.getAttribute('data-name');
+            var price = button.getAttribute('data-price');
+            var desc = button.getAttribute('data-desc');
+            var recommended = button.getAttribute('data-recommended') === 'true';
+            var category = button.getAttribute('data-category');
+            var image = button.getAttribute('data-image');
+            
+            document.getElementById('editProductId').value = id;
+            document.getElementById('editProductName').value = name;
+            document.getElementById('editProductPrice').value = price;
+            document.getElementById('editProductDesc').value = desc || '';
+            document.getElementById('editProductRecommended').checked = recommended;
+            
+            var categorySelect = document.getElementById('editProductCategory');
+            for(var i, j = 0; i = categorySelect.options[j]; j++) {
+                if(i.value == category) {
+                    categorySelect.selectedIndex = j;
+                    break;
+                }
+            }
+
+            var imagePreview = document.getElementById('editProductImagePreview');
+            if (image && image.length > 0) {
+                imagePreview.src = image;
+                imagePreview.classList.remove('d-none');
+            } else {
+                imagePreview.classList.add('d-none');
+            }
+        });
+
+        function selectTemplate(id, name, price, image, category) {
+            document.getElementById('selectedTemplateId').value = id;
+            document.getElementById('selectedTemplateName').innerText = name;
+            document.getElementById('customPriceInput').value = price;
+            document.getElementById('selectedTemplateCategory').innerText = category;
+            
+            var imgEl = document.getElementById('selectedTemplateImage');
+            if (image && image.length > 0) {
+                imgEl.src = image;
+                imgEl.classList.remove('d-none');
+            } else {
+                imgEl.classList.add('d-none');
+            }
+
+            document.getElementById('templateSubmitForm').classList.remove('d-none');
+            document.getElementById('templateSubmitForm').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function cancelTemplateSelection() {
+            document.getElementById('templateSubmitForm').classList.add('d-none');
+            document.getElementById('selectedTemplateId').value = '';
+        }
+    </script>
+}

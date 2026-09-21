@@ -1,0 +1,86 @@
+@model IEnumerable<SodiqCafeMVC.Domain.Entities.ServiceRequest>
+
+@{
+    ViewData["Title"] = "Bugungi Tarix";
+    Layout = "_AdminLayout";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1 fw-bold text-dark">Bugungi Sotuvlar Tarixi</h2>
+            <p class="text-muted mb-0">Bugun xizmat ko'rsatilgan va yakunlangan mijozlar ro'yxati</p>
+        </div>
+        <a href="/cafe-owner/queue" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left"></i> Navbatga qaytish
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="py-3 px-4 border-0">Navbat #</th>
+                        <th class="py-3 border-0">Mijoz</th>
+                        <th class="py-3 border-0">IP Manzil</th>
+                        <th class="py-3 border-0">Vaqti</th>
+                        <th class="py-3 px-4 border-0 text-end">Holat</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var req in Model)
+                        {
+                            <tr>
+                                <td class="px-4 fw-bold">#@req.DailyOrderNumber</td>
+                                <td>
+                                    @if (req.User != null)
+                                    {
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; font-weight: bold;">
+                                                @(req.User.FullName?.Substring(0,1) ?? "U")
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">@req.User.FullName</div>
+                                                <small class="text-muted">@req.User.PhoneNumber</small>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; font-weight: bold;">
+                                                G
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">Mehmon (Ro'yxatdan o'tmagan)</div>
+                                            </div>
+                                        </div>
+                                    }
+                                </td>
+                                <td><small class="text-muted">@req.IpAddress</small></td>
+                                <td>
+                                    <div class="fw-bold">@(req.CompletedAt?.ToLocalTime().ToString("HH:mm") ?? "-")</div>
+                                </td>
+                                <td class="px-4 text-end">
+                                    <span class="badge bg-success rounded-pill px-3 py-2">Yakunlangan</span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">
+                                <div style="font-size: 3rem; margin-bottom: 10px;">📋</div>
+                                <h4>Bugun hali hech qanday savdo tarixi yo'q</h4>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

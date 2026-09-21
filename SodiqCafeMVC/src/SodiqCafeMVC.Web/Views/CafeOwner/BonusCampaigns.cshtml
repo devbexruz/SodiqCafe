@@ -1,0 +1,163 @@
+@model List<SodiqCafeMVC.Domain.Entities.BonusCampaign>
+
+@{
+    ViewData["Title"] = "Bonus E'lonlari (Aksiyalar)";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">🎁 Bonus E'lonlari (Aksiyalar)</h2>
+        <p class="text-muted mb-0">@ViewBag.CafeName kafesi uchun barcha turdagi bonuslarni boshqarish</p>
+    </div>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCampaignModal">
+        ➕ Yangi Aksiya Qo'shish
+    </button>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show shadow-sm rounded-3">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-body p-0">
+        @if (!Model.Any())
+        {
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-gift fs-1 d-block mb-3"></i>
+                <p>Hozircha hech qanday bonus e'loni yo'q.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Aksiya Nomi</th>
+                            <th>Turi</th>
+                            <th>Sharti (Qiymat)</th>
+                            <th>Mukofot</th>
+                            <th>Ko'rinishi</th>
+                            <th>Holati</th>
+                            <th class="text-end pe-4">Amallar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            var typeName = ((System.ComponentModel.DataAnnotations.DisplayAttribute?)item.Type.GetType().GetField(item.Type.ToString()!)?.GetCustomAttributes(typeof(System.ComponentModel.DataAnnotations.DisplayAttribute), false).FirstOrDefault())?.Name ?? item.Type.ToString();
+                            
+                            <tr>
+                                <td class="ps-4 fw-bold">
+                                    @item.Name
+                                    @if (!string.IsNullOrEmpty(item.Description))
+                                    {
+                                        <div class="small text-muted fw-normal">@item.Description</div>
+                                    }
+                                </td>
+                                <td><span class="badge bg-light text-dark border">@typeName</span></td>
+                                <td><span class="badge bg-info text-dark">@item.ConditionValue</span></td>
+                                <td class="text-success fw-bold">@item.RewardDescription</td>
+                                <td>
+                                    @if (item.IsVisible)
+                                    {
+                                        <span class="badge bg-success bg-opacity-10 text-success"><i class="bi bi-eye"></i> Mijozga ko'rinadi</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary"><i class="bi bi-eye-slash"></i> Yashirin</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.IsActive)
+                                    {
+                                        <span class="badge bg-success">Faol</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">To'xtatilgan</span>
+                                    }
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <form asp-action="ToggleBonusCampaignActive" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="campaignId" value="@item.Id" />
+                                            @if (item.IsActive)
+                                            {
+                                                <button type="submit" class="btn btn-sm btn-outline-warning" title="To'xtatish"><i class="bi bi-pause-fill"></i></button>
+                                            }
+                                            else
+                                            {
+                                                <button type="submit" class="btn btn-sm btn-outline-success" title="Faollashtirish"><i class="bi bi-play-fill"></i></button>
+                                            }
+                                        </form>
+                                        <form asp-action="DeleteBonusCampaign" method="post" onsubmit="return confirm('Ushbu e\'lonni haqiqatan ham o\'chirasizmi? (Bog\'liq progresslar ham o\'chib ketishi mumkin!)');">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="campaignId" value="@item.Id" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="O'chirish"><i class="bi bi-trash"></i></button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Add Campaign Modal -->
+<div class="modal fade" id="addCampaignModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold">Yangi Bonus E'loni</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="AddBonusCampaign" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Nomi</label>
+                        <input type="text" name="name" class="form-control" placeholder="Masalan: 10-chisi bepul!" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Tavsifi (ixtiyoriy)</label>
+                        <textarea name="description" class="form-control" rows="2" placeholder="Qo'shimcha shartlar yoki ma'lumotlar..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Bonus Turi</label>
+                        <select name="type" class="form-select" required>
+                            @foreach (var cat in Enum.GetValues(typeof(SodiqCafeMVC.Domain.Enums.BonusType)))
+                            {
+                                <option value="@cat">@(((System.ComponentModel.DataAnnotations.DisplayAttribute?)cat.GetType().GetField(cat.ToString()!)?.GetCustomAttributes(typeof(System.ComponentModel.DataAnnotations.DisplayAttribute), false).FirstOrDefault())?.Name ?? cat.ToString())</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Shart qiymati (Soni yoki Summa)</label>
+                        <input type="number" name="conditionValue" class="form-control" placeholder="Masalan: 10 (marta) yoki 30000 (so'm)" required step="0.01" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Mukofot nimadan iborat?</label>
+                        <input type="text" name="rewardDescription" class="form-control" placeholder="Masalan: 1 ta Kofe" required />
+                    </div>
+                    <div class="mb-3 form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="isVisible" id="isVisible" value="true" checked>
+                        <label class="form-check-label fw-semibold ms-2" for="isVisible">Mijozlar ilovada buni ko'rishi mumkin</label>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Bekor qilish</button>
+                    <button type="submit" class="btn btn-primary fw-bold">Saqlash</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

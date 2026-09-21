@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SodiqCafeMVC.Application/SodiqCafeMVC.Application.csproj" />
+    <Project Path="src/SodiqCafeMVC.Domain/SodiqCafeMVC.Domain.csproj" />
+    <Project Path="src/SodiqCafeMVC.Infrastructure/SodiqCafeMVC.Infrastructure.csproj" />
+    <Project Path="src/SodiqCafeMVC.Web/SodiqCafeMVC.Web.csproj" />
+  </Folder>
+</Solution>

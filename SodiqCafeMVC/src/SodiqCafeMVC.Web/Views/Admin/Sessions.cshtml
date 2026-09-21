@@ -1,0 +1,122 @@
+@model List<UserSessionDto>
+@{
+    ViewData["Title"] = "Faol sessiyalar (Admin)";
+}
+
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">🔐 Faol foydalanuvchi sessiyalari</h2>
+            <p class="text-muted mb-0">HttpOnly cookie orqali boshqarilayotgan barcha token va sessiyalar</p>
+        </div>
+        <div>
+            <a asp-action="Cafes" class="btn btn-outline-secondary">← Kafelarga qaytish</a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white border-0 rounded-3 p-3">
+                <div class="small opacity-75">Access Token Muddati</div>
+                <div class="fs-4 fw-bold">1 Soat</div>
+                <div class="small opacity-75 mt-1">HttpOnly Cookie (X-Access-Token)</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white border-0 rounded-3 p-3">
+                <div class="small opacity-75">Refresh Token Muddati</div>
+                <div class="fs-4 fw-bold">1 Oy (30 kun)</div>
+                <div class="small opacity-75 mt-1">HttpOnly Cookie (X-Refresh-Token)</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-dark text-white border-0 rounded-3 p-3">
+                <div class="small opacity-75">Sessiya Tokeni</div>
+                <div class="fs-4 fw-bold">Tasodifiy kriptografik</div>
+                <div class="small opacity-75 mt-1">HttpOnly Cookie (X-Session-Token)</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-body p-0">
+            @if (Model == null || !Model.Any())
+            {
+                <div class="text-center py-5">
+                    <p class="text-muted fs-5">Hozirda hech qanday faol sessiya yo'q.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">Foydalanuvchi</th>
+                                <th>Sessiya tokeni (Tasodifiy)</th>
+                                <th>Access token muddati</th>
+                                <th>Refresh token muddati</th>
+                                <th>IP manzil</th>
+                                <th>Holat</th>
+                                <th class="text-end pe-4">Amallar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var session in Model)
+                            {
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="fw-bold">@session.Username</div>
+                                        <div class="text-muted small">ID: @session.UserId</div>
+                                    </td>
+                                    <td>
+                                        <code class="text-primary bg-light p-1 rounded">
+                                            @(session.SessionToken.Length > 16 ? session.SessionToken.Substring(0, 16) + "..." : session.SessionToken)
+                                        </code>
+                                    </td>
+                                    <td>
+                                        <div>@session.AccessTokenExpiresAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
+                                        <small class="text-muted">(1 soatlik JWT)</small>
+                                    </td>
+                                    <td>
+                                        <div>@session.RefreshTokenExpiresAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
+                                        <small class="text-muted">(1 oylik Refresh)</small>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">@(session.IpAddress ?? "N/A")</small>
+                                    </td>
+                                    <td>
+                                        @if (session.IsActive)
+                                        {
+                                            <span class="badge bg-success">Faol</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Bekor qilingan</span>
+                                        }
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <form asp-action="RevokeSession" method="post" class="d-inline" onsubmit="return confirm('Haqiqatan ham ushbu sessiyani bekor qilmoqchimisiz?');">
+                                            <input type="hidden" name="sessionToken" value="@session.SessionToken" />
+                                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                Bekor qilish
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,163 @@
+@model SodiqCafeMVC.Domain.Entities.Cafe
+
+@{
+    ViewData["Title"] = Model.Name + " - Sozlamalar";
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 fw-bold mb-1">🏪 @Model.Name Sozlamalari</h1>
+            <p class="text-muted mb-0">Kafe logotipi, ma'lumotlari va statistikasi</p>
+        </div>
+        <div>
+            <a asp-action="OwnerDetail" asp-route-id="@Model.OwnerId" class="btn btn-outline-secondary shadow-sm">
+                <i class="bi bi-arrow-left me-1"></i> Orqaga
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-4 mb-4">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row g-4">
+        <!-- Statistikalar -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-body p-4 text-center">
+                    <div class="mb-3 position-relative d-inline-block">
+                        @if (!string.IsNullOrEmpty(Model.LogoUrl))
+                        {
+                            <img src="@Model.LogoUrl" alt="@Model.Name Logo" class="rounded-circle shadow-sm object-fit-cover border" style="width: 120px; height: 120px;" />
+                        }
+                        else
+                        {
+                            <div class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto border" style="width: 120px; height: 120px;">
+                                <i class="bi bi-shop fs-1 text-muted"></i>
+                            </div>
+                        }
+                    </div>
+                    <h5 class="fw-bold mb-1">@Model.Name</h5>
+                    <p class="text-muted small mb-3">@Model.Owner?.FullName (Egasi)</p>
+                    
+                    <div class="d-flex justify-content-center gap-2">
+                        @if (Model.IsActive)
+                        {
+                            <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2">Faol</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger-subtle text-danger rounded-pill px-3 py-2">To'xtatilgan</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-6">
+                    <div class="card border-0 shadow-sm rounded-4 bg-primary text-white h-100">
+                        <div class="card-body p-3 text-center">
+                            <i class="bi bi-box-seam fs-3 mb-2 opacity-75"></i>
+                            <h4 class="fw-bold mb-0">@Model.Products.Count</h4>
+                            <small class="opacity-75">Mahsulotlar</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="card border-0 shadow-sm rounded-4 bg-success text-white h-100">
+                        <div class="card-body p-3 text-center">
+                            <i class="bi bi-people fs-3 mb-2 opacity-75"></i>
+                            <h4 class="fw-bold mb-0">@Model.CafeUsers.Count</h4>
+                            <small class="opacity-75">Mijozlar</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sozlamalar Formasi -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white p-4 border-bottom-0">
+                    <h5 class="fw-bold mb-0">Umumiy ma'lumotlar</h5>
+                </div>
+                <div class="card-body p-4 pt-0">
+                    <form asp-action="UpdateCafeDetails" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="cafeId" value="@Model.Id" />
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-muted small text-uppercase">Kafe Logotipi (Ixtiyoriy)</label>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="position-relative" style="cursor: pointer;" onclick="document.getElementById('logoInput').click()">
+                                    @if (!string.IsNullOrEmpty(Model.LogoUrl))
+                                    {
+                                        <img id="logoPreview" src="@Model.LogoUrl" class="rounded-3 border object-fit-cover" style="width: 80px; height: 80px;" />
+                                    }
+                                    else
+                                    {
+                                        <div id="logoPreviewPlaceholder" class="bg-light border rounded-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                            <i class="bi bi-camera fs-3 text-primary"></i>
+                                        </div>
+                                        <img id="logoPreview" src="" class="rounded-3 border object-fit-cover d-none" style="width: 80px; height: 80px;" />
+                                    }
+                                </div>
+                                <div>
+                                    <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="document.getElementById('logoInput').click()">Rasm tanlash</button>
+                                    <div class="small text-muted mt-1">Faqat JPG, PNG formatda.</div>
+                                </div>
+                                <input type="file" id="logoInput" name="logoFile" class="d-none" accept="image/*" onchange="previewImage(this);" />
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-muted small text-uppercase">Kafe Nomi</label>
+                                <input type="text" name="name" class="form-control form-control-lg bg-light border-0" value="@Model.Name" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-muted small text-uppercase">Telefon raqam</label>
+                                <input type="text" name="phoneNumber" class="form-control form-control-lg bg-light border-0" value="@Model.PhoneNumber" placeholder="+998..." />
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold text-muted small text-uppercase">Manzil</label>
+                                <input type="text" name="address" class="form-control form-control-lg bg-light border-0" value="@Model.Address" />
+                            </div>
+                        </div>
+
+                        <div class="mt-4 text-end">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm fw-bold">Saqlash</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var preview = document.getElementById('logoPreview');
+                    var placeholder = document.getElementById('logoPreviewPlaceholder');
+                    
+                    preview.src = e.target.result;
+                    preview.classList.remove('d-none');
+                    
+                    if (placeholder) {
+                        placeholder.classList.add('d-none');
+                    }
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+}

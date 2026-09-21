@@ -1,0 +1,79 @@
+@{
+    ViewData["Title"] = "Mijozlar Bazasi";
+    Layout = "_AdminLayout";
+    var customers = ViewBag.Customers as IEnumerable<dynamic>;
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1 fw-bold text-dark">Mijozlar Bazasi va Tahlil</h2>
+            <p class="text-muted mb-0">Barcha mijozlaringiz ro'yxati va ularning xarid statistikasi</p>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="py-3 px-4 border-0">Mijoz</th>
+                        <th class="py-3 border-0 text-center">Xaridlar soni</th>
+                        <th class="py-3 border-0">Eng ko'p xarid (Taom)</th>
+                        <th class="py-3 px-4 border-0 text-end">Oxirgi xarid sanasi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (customers != null && customers.Any())
+                    {
+                        foreach (var item in customers)
+                        {
+                            var user = item.User as SodiqCafeMVC.Domain.Entities.User;
+                            int totalPurchases = (int)item.TotalPurchases;
+                            DateTime lastActivity = (DateTime)item.LastActivityAt;
+
+                            <tr>
+                                <td class="px-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="bg-gradient rounded-circle d-flex align-items-center justify-content-center me-3 text-white shadow-sm" style="width: 45px; height: 45px; font-weight: bold; font-size: 1.2rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                            @(user?.FullName?.Substring(0,1) ?? "U")
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold fs-6">@user?.FullName</div>
+                                            <small class="text-muted">@user?.PhoneNumber</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-primary rounded-pill px-3 py-2 fs-6">
+                                        @totalPurchases ta
+                                    </span>
+                                </td>
+                                <td>
+                                    @* Ma'lumotlar bazasida hozircha aniq mahsulot savdosi qayd etilmasligi sababli statik/placeholder matn qo'yildi *@
+                                    <div class="d-flex align-items-center text-muted">
+                                        <span style="font-size: 1.2rem; margin-right: 8px;">🍽️</span>
+                                        <span class="fst-italic" style="font-size: 0.9rem;">Tez kunda... (Taomlar tahlili ulanmoqda)</span>
+                                    </div>
+                                </td>
+                                <td class="px-4 text-end">
+                                    <div class="fw-bold text-dark">@lastActivity.ToLocalTime().ToString("dd-MMM, yyyy")</div>
+                                    <small class="text-muted">@lastActivity.ToLocalTime().ToString("HH:mm")</small>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center py-5 text-muted">
+                                <div style="font-size: 3rem; margin-bottom: 10px;">👥</div>
+                                <h4>Hozircha mijozlar bazasi bo'sh</h4>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

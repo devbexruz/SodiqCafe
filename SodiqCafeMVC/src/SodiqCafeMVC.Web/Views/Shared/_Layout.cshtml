@@ -1,0 +1,608 @@
+@{
+    bool isFull = Context.Request.Query["format"] == "full";
+}
+
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - SodiqCafe</title>
+    <link rel="icon" type="image/png" href="~/favicon.png" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <style>
+        /* ============================================================
+           GLOBAL
+        ============================================================ */
+        :root {
+            --brand: #0d6efd;
+            --brand-2: #6610f2;
+            --brand-grad: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+            --brand-grad-soft: linear-gradient(135deg, rgba(13, 110, 253, 0.10) 0%, rgba(102, 16, 242, 0.10) 100%);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+            background: #f8f9fc;
+            color: #0b1220;
+        }
+
+        /* ============================================================
+           NAVBAR
+        ============================================================ */
+        .site-navbar {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(13, 110, 253, 0.08);
+            padding: 14px 0;
+            transition: box-shadow 0.3s ease, background 0.3s ease;
+            z-index: 1030;
+        }
+
+        .site-navbar.scrolled {
+            box-shadow: 0 10px 30px -15px rgba(13, 110, 253, 0.25);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .brand-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            font-size: 1.4rem;
+            text-decoration: none;
+            color: #0b1220;
+            transition: transform 0.25s ease;
+        }
+
+        .brand-logo:hover {
+            transform: translateY(-1px);
+            color: #0b1220;
+        }
+
+        .brand-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: var(--brand-grad);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 10px 25px -8px rgba(13, 110, 253, 0.65);
+            transition: transform 0.35s ease;
+        }
+
+        .brand-logo:hover .brand-icon {
+            transform: rotate(-8deg) scale(1.05);
+        }
+
+        .brand-text-accent {
+            background: var(--brand-grad);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Nav links */
+        .site-navbar .nav-link {
+            font-weight: 600;
+            color: #3a4256;
+            padding: 8px 16px !important;
+            border-radius: 10px;
+            position: relative;
+            transition: color 0.25s ease, background 0.25s ease;
+        }
+
+        .site-navbar .nav-link:hover,
+        .site-navbar .nav-link.active {
+            color: var(--brand);
+            background: rgba(13, 110, 253, 0.08);
+        }
+
+        /* Navbar toggler */
+        .site-navbar .navbar-toggler {
+            border: none;
+            padding: 6px 10px;
+            border-radius: 10px;
+            box-shadow: none !important;
+        }
+
+        .site-navbar .navbar-toggler:focus {
+            box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2) !important;
+        }
+
+        /* CTA button */
+        .btn-brand {
+            background: var(--brand-grad);
+            color: #fff !important;
+            border: none;
+            border-radius: 50px;
+            padding: 10px 26px;
+            font-weight: 700;
+            box-shadow: 0 10px 25px -10px rgba(13, 110, 253, 0.65);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-brand:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 35px -12px rgba(13, 110, 253, 0.85);
+        }
+
+        .btn-brand:active {
+            transform: translateY(0);
+        }
+
+        /* ============================================================
+           FOOTER
+        ============================================================ */
+        .site-footer {
+            position: relative;
+            padding: 60px 0 30px;
+            
+            background:
+                radial-gradient(circle at 15% 20%, rgba(13, 110, 253, 0.18) 0%, transparent 45%),
+                radial-gradient(circle at 85% 80%, rgba(102, 16, 242, 0.15) 0%, transparent 45%),
+                #0b1220;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .site-footer::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--brand-grad);
+        }
+
+        .footer-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            font-size: 1.3rem;
+            color: #fff;
+            text-decoration: none;
+            margin-bottom: 16px;
+        }
+
+        .footer-brand .brand-icon {
+            box-shadow: 0 10px 25px -8px rgba(13, 110, 253, 0.85);
+        }
+
+        .footer-desc {
+            color: rgba(255, 255, 255, 0.65);
+            max-width: 360px;
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+        .footer-heading {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 18px;
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.65);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.25s ease, padding-left 0.25s ease;
+        }
+
+        .footer-links a:hover {
+            color: #fff;
+            padding-left: 4px;
+        }
+
+        .footer-contact {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 0.95rem;
+            margin-bottom: 12px;
+        }
+
+        .footer-contact-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 0.95rem;
+        }
+
+        .footer-divider {
+            border-top: 1px solid rgba(255, 255, 255, 0.10);
+            margin-top: 40px;
+            padding-top: 24px;
+        }
+
+        .footer-bottom {
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 0.9rem;
+        }
+
+        .social-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+        }
+
+        .social-btn:hover {
+            transform: translateY(-3px);
+            background: var(--brand-grad);
+            border-color: transparent;
+            color: #fff;
+        }
+
+        /* ============================================================
+           BACK TO TOP
+        ============================================================ */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--brand-grad);
+            color: #fff;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 12px 30px -10px rgba(13, 110, 253, 0.75);
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            z-index: 1050;
+        }
+
+        .back-to-top.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .back-to-top:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 18px 40px -12px rgba(13, 110, 253, 0.9);
+        }
+
+        /* ============================================================
+           RESPONSIVE
+        ============================================================ */
+        @@media (max-width: 991px) {
+            .site-navbar .navbar-collapse {
+                margin-top: 16px;
+                padding-top: 16px;
+                border-top: 1px solid rgba(13, 110, 253, 0.08);
+            }
+
+            .site-navbar .nav-link {
+                padding: 10px 12px !important;
+            }
+
+            .back-to-top {
+                bottom: 20px;
+                right: 20px;
+                width: 44px;
+                height: 44px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    @if (!isFull)
+    {
+        <header>
+            <nav id="siteNavbar" class="navbar navbar-expand-lg site-navbar sticky-top">
+                <div class="container">
+
+                    <a class="brand-logo" asp-controller="Home" asp-action="Index">
+                        <span class="brand-icon" style="background: transparent; box-shadow: none;"><img src="~/favicon.png" alt="Logo" style="width: 100%; height: 100%; object-fit: contain;" /></span>
+                        <span>Sodiq<span class="brand-text-accent">Cafe</span></span>
+                    </a>
+
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#mainNav" aria-controls="mainNav"
+                            aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+
+                    <div class="navbar-collapse collapse" id="mainNav">
+                        <ul class="navbar-nav mx-auto align-items-lg-center">
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="Index">
+                                    Bosh sahifa
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Menyu" asp-action="Index">
+                                    Menyu
+                                </a>
+                            </li>
+                            @if (User.Identity?.IsAuthenticated == true && (User.IsInRole("Admin") || User.IsInRole("CafeOwner")))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-primary fw-bold d-flex align-items-center gap-1" asp-controller='@(User.IsInRole("Admin") ? "Admin" : "CafeOwner")' asp-action='@(User.IsInRole("Admin") ? "Cafes" : "Dashboard")'>
+                                        <i class="bi bi-lightning-charge-fill text-warning"></i> Boshqaruv (Panel)
+                                    </a>
+                                </li>
+                            }
+                            <li class="nav-item">
+                                <a class="nav-link" href="/#how-it-works">
+                                    Qanday ishlaydi
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/#pricing">
+                                    Narxlar
+                                </a>
+                            </li>
+                        </ul>
+
+                        <ul class="navbar-nav align-items-lg-center gap-2">
+                            @if (User.Identity?.IsAuthenticated == true)
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle d-flex align-items-center gap-1" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <span class="badge bg-primary rounded-pill">@(User.IsInRole("Admin") ? "Admin" : "Kafe")</span>
+                                        <span class="fw-semibold">@User.Identity.Name</span>
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm rounded-3" aria-labelledby="userDropdown">
+                                        @if (User.IsInRole("Admin"))
+                                        {
+                                            <li><a class="dropdown-item d-flex align-items-center gap-2" asp-controller="Admin" asp-action="Cafes"><i class="bi bi-bar-chart-fill text-primary"></i> Admin boshqaruvi</a></li>
+                                        }
+                                        else if (User.IsInRole("CafeOwner"))
+                                        {
+                                            <li><a class="dropdown-item fw-bold text-primary d-flex align-items-center gap-2" asp-controller="CafeOwner" asp-action="Dashboard"><i class="bi bi-bar-chart-fill"></i> Sotuvchi Paneli</a></li>
+                                            
+                                            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier);
+                                            var userIdStr = userIdClaim?.Value;
+                                            if (!string.IsNullOrEmpty(userIdStr) && int.TryParse(userIdStr, out var userId))
+                                            {
+                                                var dbContext = Context.RequestServices.GetService(typeof(SodiqCafeMVC.Infrastructure.Data.AppDbContext)) as SodiqCafeMVC.Infrastructure.Data.AppDbContext;
+                                                if (dbContext != null)
+                                                {
+                                                    var userCafes = System.Linq.Enumerable.ToList(System.Linq.Queryable.Where(dbContext.Cafes, c => c.OwnerId == userId));
+                                                    if (userCafes.Any())
+                                                    {
+                                                        <li><hr class="dropdown-divider"></li>
+                                                        <li><h6 class="dropdown-header text-muted small text-uppercase fw-bold px-3">Kafeni tanlash</h6></li>
+                                                        foreach(var userCafe in userCafes)
+                                                        {
+                                                            <li>
+                                                                <a class="dropdown-item d-flex align-items-center gap-2" asp-controller="CafeOwner" asp-action="SelectCafe" asp-route-id="@userCafe.Id">
+                                                                    @if (!string.IsNullOrEmpty(userCafe.LogoUrl))
+                                                                    {
+                                                                        <img src="@userCafe.LogoUrl" style="width: 20px; height: 20px; border-radius: 4px; object-fit: cover;" />
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <i class="bi bi-building text-secondary"></i>
+                                                                    }
+                                                                    @userCafe.Name
+                                                                </a>
+                                                            </li>
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <form asp-controller="Auth" asp-action="Logout" method="post" class="px-2">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="dropdown-item text-danger rounded-2 d-flex align-items-center gap-2">
+                                                    <i class="bi bi-box-arrow-right"></i> Tizimdan chiqish
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link d-flex align-items-center gap-1" asp-controller="Auth" asp-action="Login">
+                                        <i class="bi bi-lock-fill"></i> Kirish
+                                    </a>
+                                </li>
+                                <li class="nav-item mt-2 mt-lg-0">
+                                    <a class="btn-brand d-inline-flex align-items-center gap-2" href="/#contact">
+                                        <i class="bi bi-send-fill"></i>
+                                        Bog'lanish
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+
+                </div>
+            </nav>
+        </header>
+    }
+
+    <div class="container-fluid px-0">
+        <main role="main">
+            @RenderBody()
+        </main>
+    </div>
+
+    @if (!isFull)
+    {
+        <footer class="site-footer">
+            <div class="container">
+                <div class="row g-4 g-lg-5">
+
+                    <!-- BRAND -->
+                    <div class="col-lg-4">
+                        <a class="footer-brand" asp-controller="Home" asp-action="Index">
+                            <span class="brand-icon" style="background: transparent; box-shadow: none;"><img src="~/favicon.png" alt="Logo" style="width: 100%; height: 100%; object-fit: contain;" /></span>
+                            <span>Sodiq<span class="brand-text-accent">Cafe</span></span>
+                        </a>
+                        <p class="footer-desc">
+                            Kafe va restoranlar uchun zamonaviy raqamli menyu,
+                            NFC va QR orqali tezkor kirish, hamda mijozlar
+                            sodiqligi tizimi.
+                        </p>
+
+                        <div class="d-flex gap-2 mt-4">
+                            <a href="#" class="social-btn" aria-label="Telegram"><i class="bi bi-telegram"></i></a>
+                            <a href="#" class="social-btn" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+                            <a href="#" class="social-btn" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                            <a href="#" class="social-btn" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+                        </div>
+                    </div>
+
+                    <!-- LINKS -->
+                    <div class="col-6 col-lg-2">
+                        <h6 class="footer-heading">Platforma</h6>
+                        <ul class="footer-links">
+                            <li><a asp-controller="Home" asp-action="Index">Bosh sahifa</a></li>
+                            <li><a asp-controller="Menyu" asp-action="Index">Menyu</a></li>
+                            <li><a href="/#how-it-works">Qanday ishlaydi</a></li>
+                            <li><a href="/#pricing">Narxlar</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- CONTACT -->
+                    <div class="col-6 col-lg-3">
+                        <h6 class="footer-heading">Bog'lanish</h6>
+                        <div class="footer-contact">
+                            <div class="footer-contact-icon"><i class="bi bi-telephone"></i></div>
+                            <span>+998 90 123 45 67</span>
+                        </div>
+                        <div class="footer-contact">
+                            <div class="footer-contact-icon"><i class="bi bi-telegram"></i></div>
+                            <span>@@sodiqcafe_admin</span>
+                        </div>
+                        <div class="footer-contact">
+                            <div class="footer-contact-icon"><i class="bi bi-geo-alt"></i></div>
+                            <span>Toshkent, Chilonzor</span>
+                        </div>
+                    </div>
+
+                    <!-- CTA -->
+                    <div class="col-lg-3">
+                        <h6 class="footer-heading">Boshlashga tayyormisiz?</h6>
+                        <p class="footer-desc mb-3" style="max-width: 100%;">
+                            14 kun bepul sinab ko'ring. Kafengizni bugun raqamlashtiring.
+                        </p>
+                        <a href="/#contact" class="btn-brand">
+                            <i class="bi bi-rocket-takeoff-fill"></i>
+                            Hoziroq boshlash
+                        </a>
+                    </div>
+
+                </div>
+
+                <div class="footer-divider d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+                    <div class="footer-bottom text-center text-md-start">
+                        © @DateTime.Now.Year SodiqCafe. Barcha huquqlar himoyalangan.
+                    </div>
+                    <div class="footer-bottom text-center text-md-end">
+                        Kafe egalari uchun eng yaxshi yechim ✨
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Back to top -->
+        <button id="backToTop" class="back-to-top" aria-label="Yuqoriga">
+            ↑
+        </button>
+    }
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // ---------- Navbar scroll effect ----------
+        (function () {
+            const navbar = document.getElementById('siteNavbar');
+            if (!navbar) return;
+
+            const onScroll = () => {
+                if (window.scrollY > 20) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+            };
+
+            window.addEventListener('scroll', onScroll, { passive: true });
+            onScroll();
+        })();
+
+        // ---------- Back to top ----------
+        (function () {
+            const btn = document.getElementById('backToTop');
+            if (!btn) return;
+
+            const toggleBtn = () => {
+                if (window.scrollY > 400) {
+                    btn.classList.add('show');
+                } else {
+                    btn.classList.remove('show');
+                }
+            };
+
+            window.addEventListener('scroll', toggleBtn, { passive: true });
+
+            btn.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        })();
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

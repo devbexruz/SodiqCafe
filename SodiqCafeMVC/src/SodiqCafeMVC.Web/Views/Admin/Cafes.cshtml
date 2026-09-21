@@ -1,0 +1,327 @@
+@model List<CafeDto>
+@{
+    ViewData["Title"] = "Admin Panel - Kafelar va Faollik muddati";
+    var summary = ViewBag.Summary as BillingSummaryDto ?? new BillingSummaryDto();
+}
+
+<div class="container-fluid px-4 py-4">
+    <!-- Yuqori sarlavha va boshqaruv tugmalari -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <h2 class="fw-bold mb-1 text-dark">🏢 Kafelar va Oylik Faollik Nazorati</h2>
+            <p class="text-muted mb-0">Kafelarning faollik muddati (Active Date), balansi, avtomatik to'lovlar va invoyslar boshqaruvi</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a asp-action="Templates" class="btn btn-outline-secondary fw-semibold shadow-sm">
+                🛠 Shablon Mahsulotlar
+            </a>
+            <form asp-action="GenerateMonthlyInvoices" method="post" class="d-inline" onsubmit="return confirm('Barcha kafelar uchun yangi oy oylik invoyslarini generatsiya qilmoqchimisiz?');">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-outline-primary fw-semibold shadow-sm">
+                    ⚡ Oylik Invoyslar chiqarish
+                </button>
+            </form>
+            <a asp-action="Invoices" class="btn btn-outline-dark fw-semibold shadow-sm">
+                📑 Barcha Invoyslar
+            </a>
+            <a asp-action="Sessions" class="btn btn-outline-info fw-semibold shadow-sm">
+                🔒 Faol sessiyalar
+            </a>
+            <a asp-action="RegisterCafe" class="btn btn-primary fw-bold shadow-sm">
+                ➕ Yangi Kafe egasini qo'shish
+            </a>
+        </div>
+    </div>
+
+    <!-- Bildirishnomalar -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm rounded-3" role="alert">
+            <div class="d-flex align-items-center">
+                <span class="fs-4 me-2">✓</span>
+                <div>@TempData["SuccessMessage"]</div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm rounded-3" role="alert">
+            <div class="d-flex align-items-center">
+                <span class="fs-4 me-2">⚠</span>
+                <div>@TempData["ErrorMessage"]</div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Statistika Dashboard Kartochkalari -->
+    <div class="row g-3 mb-4">
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-3 border-start border-4 border-primary">
+                <div class="text-muted small fw-semibold text-uppercase">Jami Kafelar</div>
+                <div class="fs-2 fw-bold text-dark my-1">@summary.TotalCafes</div>
+                <div class="small text-muted">Ro'yxatdan o'tgan</div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-3 border-start border-4 border-success">
+                <div class="text-muted small fw-semibold text-uppercase">Faol Kafelar</div>
+                <div class="fs-2 fw-bold text-success my-1">@summary.ActiveCafes</div>
+                <div class="small text-muted">Menyusi ochiq 🟢</div>
+            </div>
+        </div>
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-3 border-start border-4 border-danger">
+                <div class="text-muted small fw-semibold text-uppercase">To'xtatilgan</div>
+                <div class="fs-2 fw-bold text-danger my-1">@summary.SuspendedCafes</div>
+                <div class="small text-muted">Muddati o'tgan / Qarz 🔴</div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 col-sm-6">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-3 border-start border-4 border-warning">
+                <div class="text-muted small fw-semibold text-uppercase">To'lov Kutilmoqda</div>
+                <div class="fs-3 fw-bold text-warning my-1">@summary.TotalPendingInvoicesAmount.ToString("N0") <small class="fs-6 text-muted">so'm</small></div>
+                <div class="small text-muted">@summary.PendingInvoicesCount ta ochiq invoys</div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 col-sm-12">
+            <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-3 border-start border-4 border-info">
+                <div class="text-muted small fw-semibold text-uppercase">Kafelar Balansi</div>
+                <div class="fs-3 fw-bold text-info my-1">@summary.TotalCafesBalance.ToString("N0") <small class="fs-6 text-muted">so'm</small></div>
+                <div class="small text-muted">Depozit mablag'lar</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kafelar jadvali -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white py-3 px-4 border-bottom d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0 text-dark">📋 Barcha Kafelar va Obuna Holati</h5>
+            <span class="badge bg-light text-dark border px-3 py-2">Jami: @Model.Count ta</span>
+        </div>
+        <div class="card-body p-0">
+            @if (Model == null || !Model.Any())
+            {
+                <div class="text-center py-5">
+                    <p class="text-muted fs-5">Hozircha hech qanday kafe ro'yxatdan o'tkazilmagan.</p>
+                    <a asp-action="RegisterCafe" class="btn btn-primary">Birinchi kafeni ro'yxatdan o'tkazish</a>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">ID</th>
+                                <th>Kafe Nomi</th>
+                                <th>Kafe Egasi</th>
+                                <th>Faollik Muddati (Active Until)</th>
+                                <th>Balans</th>
+                                <th>Oylik To'lov</th>
+                                <th>Invoyslar</th>
+                                <th>Holat</th>
+                                <th class="text-end pe-4">Amallar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var cafe in Model)
+                            {
+                                var isActive = cafe.IsActive;
+                                <tr>
+                                    <td class="ps-4 fw-bold text-muted">#@cafe.Id</td>
+                                    <td>
+                                        <div class="fw-bold fs-5 text-dark mb-1">
+                                            <a asp-action="CafeDetail" asp-route-id="@cafe.Id" class="text-primary text-decoration-none d-flex align-items-center gap-2">
+                                                @if(!string.IsNullOrEmpty(cafe.LogoUrl))
+                                                {
+                                                    <img src="@cafe.LogoUrl" style="width: 24px; height: 24px; border-radius: 4px; object-fit: cover;" />
+                                                }
+                                                @cafe.Name <i class="bi bi-gear-fill small text-muted"></i>
+                                            </a>
+                                        </div>
+                                        <small class="text-muted">@(cafe.Address ?? "Manzil kiritilmagan")</small>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold">👤 @cafe.OwnerName</div>
+                                        <small class="text-muted">@cafe.OwnerEmail</small>
+                                        @if (!string.IsNullOrEmpty(cafe.PhoneNumber))
+                                        {
+                                            <div><small class="text-muted">📞 @cafe.PhoneNumber</small></div>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <span class="fw-bold @(isActive ? "text-dark" : "text-danger")">
+                                                @cafe.ActiveUntil.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                                            </span>
+                                        </div>
+                                        @if (isActive)
+                                        {
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                                ⏳ @cafe.DaysRemaining kun qoldi
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle">
+                                                ⚠️ Obuna muddati o'tgan
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold fs-6">
+                                            -
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-muted">
+                                            @cafe.BasePrice.ToString("N0") so'm/oy
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if (cafe.PendingInvoicesCount > 0)
+                                        {
+                                            <a asp-action="Invoices" asp-route-cafeId="@cafe.Id" class="badge bg-warning text-dark text-decoration-none">
+                                                @cafe.PendingInvoicesCount ta kutilmoqda
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a asp-action="Invoices" asp-route-cafeId="@cafe.Id" class="badge bg-light text-secondary border text-decoration-none">
+                                                Barchasi to'langan ✓
+                                            </a>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (isActive)
+                                        {
+                                            <span class="badge bg-success px-3 py-2 rounded-pill">🟢 Faol</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger px-3 py-2 rounded-pill">🔴 To'xtatilgan</span>
+                                        }
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <div class="dropdown">
+                                            <button class="btn btn-light btn-sm border dropdown-toggle fw-semibold" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                Boshqarish
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3">
+                                                <li>
+                                                    <a class="dropdown-item" asp-action="RegisterCafe" asp-route-ownerId="@cafe.OwnerId">
+                                                        ➕ Ushbu egasiga yangi kafe qo'shish
+                                                    </a>
+                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <button type="button" class="dropdown-item text-success fw-semibold" data-bs-toggle="modal" data-bs-target="#topupModal" data-cafe-id="@cafe.Id" data-cafe-name="@cafe.Name">
+                                                        💰 Balansni to'ldirish
+                                                    </button>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" asp-action="Invoices" asp-route-cafeId="@cafe.Id">
+                                                        📑 Invoyslar tarixi
+                                                    </a>
+                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <form asp-action="ExtendActiveUntil" method="post" class="px-2">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="cafeId" value="@cafe.Id" />
+                                                        <input type="hidden" name="months" value="1" />
+                                                        <button type="submit" class="dropdown-item text-primary">
+                                                            ➕ Muddatni +1 oy uzaytirish
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                <li>
+                                                    <form asp-action="ToggleSuspend" method="post" class="px-2">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="cafeId" value="@cafe.Id" />
+                                                        <button type="submit" class="dropdown-item @(cafe.IsSuspended ? "text-success" : "text-danger")">
+                                                            @(cafe.IsSuspended ? "▶️ Faollashtirish" : "⏸️ Vaqtincha to'xtatish")
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Balans to'ldirish Modali -->
+<div class="modal fade" id="topupModal" tabindex="-1" aria-labelledby="topupModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <form asp-action="TopUpBalance" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="modalCafeId" name="cafeId" value="" />
+
+                <div class="modal-header bg-primary text-white rounded-top-4">
+                    <h5 class="modal-title fw-bold" id="topupModalLabel">💰 Kafe Balansini To'ldirish</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">Kafe nomi:</label>
+                        <h5 class="fw-bold text-dark" id="modalCafeName">-</h5>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">Joriy balans:</label>
+                        <div class="fs-5 fw-bold text-success" id="modalCafeBalance">- so'm</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="modalAmount" class="form-label fw-semibold">To'ldirish summasi (so'mda):</label>
+                        <div class="input-group">
+                            <input type="number" step="1000" min="1000" class="form-control form-control-lg" id="modalAmount" name="amount" placeholder="Masalan: 300000" required />
+                            <span class="input-group-text">UZS</span>
+                        </div>
+                        <small class="text-muted">Mablag' kiritilgach, kutilayotgan invoys bo'yicha pul avtomatik yechiladi va kafening faollik muddati 1 oyga uzaytiriladi. Ortiqchasi balansda qoladi.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="modalNote" class="form-label fw-semibold">Izoh (ixtiyoriy):</label>
+                        <input type="text" class="form-control" id="modalNote" name="note" placeholder="Masalan: Naqd to'lov yoki Click orqali" />
+                    </div>
+                </div>
+
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">Bekor qilish</button>
+                    <button type="submit" class="btn btn-success fw-bold px-4 rounded-3">✓ Balansni to'ldirish</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const topupModal = document.getElementById('topupModal');
+        if (topupModal) {
+            topupModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const cafeId = button.getAttribute('data-cafe-id');
+                const cafeName = button.getAttribute('data-cafe-name');
+                const cafeBalance = button.getAttribute('data-cafe-balance');
+
+                document.getElementById('modalCafeId').value = cafeId;
+                document.getElementById('modalCafeName').textContent = cafeName;
+                document.getElementById('modalCafeBalance').textContent = cafeBalance + ' so\'m';
+                document.getElementById('modalAmount').value = '';
+            });
+        }
+    </script>
+}

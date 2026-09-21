@@ -1,0 +1,440 @@
+@model IEnumerable<SodiqCafeMVC.Domain.Entities.Cafe>
+
+@{
+    ViewData["Title"] = "Kafelar tarmog'i";
+}
+
+<!-- ============================================================
+     CAFES LIST
+============================================================ -->
+<section class="section cafes-section">
+    <div class="container">
+
+        <!-- Header -->
+        <div class="section-head text-center">
+            <span class="section-eyebrow">
+                <span class="dot-pulse"></span>
+                Hamkorlarimiz
+            </span>
+            <h2 class="section-title">
+                Bizning <span class="gradient-text">hamkor kafelarimiz</span>
+            </h2>
+            <p class="section-desc">
+                O'zingizga qulay bo'lgan filialni tanlang va menyu bilan tanishing
+            </p>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div class="empty-state text-center">
+                <div class="empty-icon">🏪</div>
+                <h4 class="fw-bold mt-3 mb-2">Hozircha kafelar yo'q</h4>
+                <p class="text-muted mb-0">Tez orada yangi filiallar qo'shiladi.</p>
+            </div>
+        }
+        else
+        {
+            <div class="row g-4 justify-content-center">
+
+                @foreach (var cafe in Model)
+                {
+                    <div class="col-md-6 col-lg-5">
+                        <div class="cafe-card">
+
+                            <!-- Rasm / Icon -->
+                            <div class="cafe-visual">
+                                <div class="cafe-visual-pattern"></div>
+                                <div class="cafe-icon-wrap overflow-hidden p-0 bg-white shadow-sm border border-white border-2">
+                                    @if (!string.IsNullOrEmpty(cafe.LogoUrl))
+                                    {
+                                        <img src="@cafe.LogoUrl" alt="Logo" class="w-100 h-100 object-fit-cover" />
+                                    }
+                                    else
+                                    {
+                                        <span class="d-flex w-100 h-100 align-items-center justify-content-center cafe-icon">
+                                            @(cafe.Name.Contains("Centr") ? "🏙️" : "🏪")
+                                        </span>
+                                    }
+                                </div>
+
+                                <!-- Status badge -->
+                                <span class="cafe-status">
+                                    <span class="status-dot"></span>
+                                    Ochiq
+                                </span>
+                            </div>
+
+                            <!-- Body -->
+                            <div class="cafe-body">
+
+                                <div class="cafe-head">
+                                    <h3 class="cafe-name">@cafe.Name</h3>
+                                </div>
+
+                                <div class="cafe-address">
+                                    <span class="address-icon">📍</span>
+                                    <span>@cafe.Address</span>
+                                </div>
+
+                                <a href="/menyu/kafe/@cafe.Id" class="btn-brand w-100 cafe-btn">
+                                    <span>Menyuni ko'rish</span>
+                                    <span class="btn-arrow">→</span>
+                                </a>
+
+                            </div>
+                        </div>
+                    </div>
+                }
+
+            </div>
+        }
+
+    </div>
+</section>
+
+
+<style>
+    /* ============================================================
+       SECTION BASE
+    ============================================================ */
+    .cafes-section {
+        padding: 90px 0;
+        background:
+            radial-gradient(circle at 10% 15%, rgba(13, 110, 253, 0.08) 0%, transparent 45%),
+            radial-gradient(circle at 90% 85%, rgba(102, 16, 242, 0.07) 0%, transparent 45%),
+            linear-gradient(180deg, #f8f9ff 0%, #ffffff 100%);
+        min-height: calc(100vh - 200px);
+    }
+
+    /* ---------- Section head ---------- */
+    .section-head {
+        margin-bottom: 60px;
+    }
+
+    .section-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 20px;
+        background: #fff;
+        color: #0d6efd;
+        font-weight: 600;
+        font-size: 0.88rem;
+        border-radius: 50px;
+        letter-spacing: 0.3px;
+        margin-bottom: 16px;
+        box-shadow: 0 8px 24px -12px rgba(13, 110, 253, 0.45);
+        border: 1px solid rgba(13, 110, 253, 0.15);
+    }
+
+    .dot-pulse {
+        width: 8px;
+        height: 8px;
+        background: #0d6efd;
+        border-radius: 50%;
+        position: relative;
+    }
+
+    .dot-pulse::after {
+        content: "";
+        position: absolute;
+        inset: -4px;
+        border-radius: 50%;
+        border: 2px solid #0d6efd;
+        animation: pulseRing 1.8s ease-out infinite;
+    }
+
+    @@keyframes pulseRing {
+        0% { transform: scale(0.7); opacity: 1; }
+        100% { transform: scale(1.8); opacity: 0; }
+    }
+
+    .section-title {
+        font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+        font-weight: 800;
+        line-height: 1.2;
+        margin-bottom: 14px;
+        color: #0b1220;
+    }
+
+    .section-desc {
+        color: #6c757d;
+        max-width: 620px;
+        margin: 0 auto;
+        font-size: 1.05rem;
+    }
+
+    .gradient-text {
+        background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    /* ============================================================
+       CAFE CARD
+    ============================================================ */
+    .cafe-card {
+        background: #fff;
+        border-radius: 24px;
+        overflow: hidden;
+        border: 1px solid #eef0f5;
+        box-shadow: 0 15px 40px -25px rgba(13, 110, 253, 0.25);
+        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+                    box-shadow 0.4s ease,
+                    border-color 0.4s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .cafe-card:hover {
+        transform: translateY(-8px);
+        border-color: rgba(13, 110, 253, 0.25);
+        box-shadow: 0 35px 70px -30px rgba(13, 110, 253, 0.5);
+    }
+
+    /* ---------- Visual (top) ---------- */
+    .cafe-visual {
+        position: relative;
+        height: 200px;
+        background: linear-gradient(135deg, #0a1e5e 0%, #0d6efd 55%, #6610f2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .cafe-visual-pattern {
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(rgba(255, 255, 255, 0.18) 1px, transparent 1px);
+        background-size: 20px 20px;
+        opacity: 0.5;
+    }
+
+    .cafe-visual::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.18) 0%, transparent 50%);
+        pointer-events: none;
+    }
+
+    .cafe-icon-wrap {
+        position: relative;
+        z-index: 1;
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(12px);
+        border: 2px solid rgba(255, 255, 255, 0.35);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.45s ease, background 0.45s ease;
+        box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.5),
+                    inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+    }
+
+    .cafe-icon-wrap::after {
+        content: "";
+        position: absolute;
+        inset: -10px;
+        border-radius: 50%;
+        border: 2px dashed rgba(255, 255, 255, 0.35);
+        animation: spin 22s linear infinite;
+    }
+
+    @@keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .cafe-card:hover .cafe-icon-wrap {
+        transform: scale(1.06);
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .cafe-icon {
+        font-size: 3.4rem;
+        line-height: 1;
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.25));
+    }
+
+    /* Status badge */
+    .cafe-status {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        background: rgba(255, 255, 255, 0.9);
+        color: #16a34a;
+        font-size: 0.78rem;
+        font-weight: 700;
+        border-radius: 50px;
+        box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(6px);
+        z-index: 2;
+    }
+
+    .status-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #16a34a;
+        box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2);
+        animation: statusPulse 1.8s ease-in-out infinite;
+    }
+
+    @@keyframes statusPulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.25); opacity: 0.75; }
+    }
+
+    /* ---------- Body ---------- */
+    .cafe-body {
+        padding: 26px 28px 28px;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+
+    .cafe-head {
+        margin-bottom: 14px;
+    }
+
+    .cafe-name {
+        font-weight: 800;
+        font-size: 1.4rem;
+        color: #0b1220;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+    .cafe-address {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        color: #5a6473;
+        font-size: 0.98rem;
+        line-height: 1.55;
+        margin-bottom: 22px;
+        flex-grow: 1;
+    }
+
+    .address-icon {
+        font-size: 1.05rem;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    /* ---------- Button ---------- */
+    .cafe-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 14px 26px;
+        background: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+        color: #fff !important;
+        border: none;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 1rem;
+        text-decoration: none;
+        box-shadow: 0 12px 30px -12px rgba(13, 110, 253, 0.7);
+        transition: transform 0.3s ease, box-shadow 0.3s ease, gap 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .cafe-btn::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+        transition: left 0.6s ease;
+    }
+
+    .cafe-btn:hover {
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 18px 40px -14px rgba(13, 110, 253, 0.9);
+        gap: 14px;
+    }
+
+    .cafe-btn:hover::before {
+        left: 100%;
+    }
+
+    .btn-arrow {
+        display: inline-block;
+        transition: transform 0.3s ease;
+    }
+
+    .cafe-btn:hover .btn-arrow {
+        transform: translateX(4px);
+    }
+
+    /* ============================================================
+       EMPTY STATE
+    ============================================================ */
+    .empty-state {
+        padding: 80px 20px;
+        background: #fff;
+        border-radius: 24px;
+        border: 1px dashed #d0d7e2;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        opacity: 0.6;
+    }
+
+    /* ============================================================
+       RESPONSIVE
+    ============================================================ */
+    @@media (max-width: 768px) {
+        .cafes-section {
+            padding: 60px 0;
+        }
+
+        .section-head {
+            margin-bottom: 40px;
+        }
+
+        .cafe-visual {
+            height: 170px;
+        }
+
+        .cafe-icon-wrap {
+            width: 90px;
+            height: 90px;
+        }
+
+        .cafe-icon {
+            font-size: 2.6rem;
+        }
+
+        .cafe-icon-wrap::after {
+            inset: -8px;
+        }
+
+        .cafe-body {
+            padding: 22px 22px 24px;
+        }
+
+        .cafe-name {
+            font-size: 1.2rem;
+        }
+    }
+</style>

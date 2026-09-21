@@ -1,0 +1,209 @@
+@model SodiqCafeMVC.Domain.Entities.ServiceRequest
+@using SodiqCafeMVC.Domain.Enums
+
+@{
+    Layout = null;
+    bool isCompleted = Model.Status == ServiceRequestStatus.Completed;
+}
+
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sizning Navbatingiz - @ViewBag.CafeName</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+        }
+        .bonus-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            padding: 40px;
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            position: relative;
+            overflow: hidden;
+        }
+        .cafe-name {
+            color: #6c757d;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+        .instruction {
+            font-size: 1.4rem;
+            color: #333;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+        .id-display {
+            font-size: 7rem;
+            font-weight: 900;
+            background: -webkit-linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 30px;
+            line-height: 1;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.1);
+        }
+        .status-box {
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+        .status-waiting {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        .status-turn {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="bonus-card">
+        <div class="cafe-name">@ViewBag.CafeName</div>
+        <div class="instruction">Sotuvchiga quyidagi raqamni ko'rsating:</div>
+        
+        <div class="id-display">
+            #@Model.DailyOrderNumber
+        </div>
+        
+        <div id="statusMessage" class="status-box status-waiting" style="display: @(isCompleted ? "none" : "block")">
+            <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+            Kutilmoqda...
+        </div>
+        
+        <div id="successMessage" class="status-box status-success mt-3" style="display: @(isCompleted ? "block" : "none")">
+            🎉 Bonuslar muvaffaqiyatli taqdim etildi!
+        </div>
+        
+        <div id="bonusActionBox" class="mt-4" style="display: @(isCompleted ? "block" : "none")">
+            <p class="text-muted small mb-3">Bonus haqida batafsil ma'lumot olish va uni ko'rish uchun Telegram botimizga o'ting.</p>
+            <a href="https://t.me/SodiqCafeBot?start=bonus_@Model.Id" class="btn w-100 fw-bold shadow-sm" style="background: linear-gradient(135deg, #0088cc 0%, #00aaff 100%); color: white; padding: 12px; border-radius: 12px; font-size: 1.1rem;">
+                ✈️ Bonusni olish (Botga o'tish)
+            </a>
+        </div>
+    </div>
+
+    <script src="~/lib/microsoft/signalr/dist/browser/signalr.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        const navbatId = @Model.Id;
+        const storageKey = 'navbatToken_' + navbatId;
+        
+        // Tokenni URL dan olib, localga saqlash va URL dan o'chirish
+        const urlParams = new URLSearchParams(window.location.search);
+        let token = urlParams.get('t');
+        
+        if (token) {
+            localStorage.setItem(storageKey, token);
+            // URL dan token yashiriladi
+            window.history.replaceState({}, document.title, window.location.pathname);
+        } else {
+            token = localStorage.getItem(storageKey);
+        }
+
+        function showConfetti() {
+            var duration = 3 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            var interval = setInterval(function() {
+                var timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+                var particleCount = 50 * (timeLeft / duration);
+                confetti(Object.assign({}, defaults, { particleCount,
+                    origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+                }));
+                confetti(Object.assign({}, defaults, { particleCount,
+                    origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+                }));
+            }, 250);
+        }
+
+        @if (isCompleted)
+        {
+            <text>
+            // Agar sahifa yuklanganda status Completed bo'lsa
+            showConfetti();
+            // Local dan tokenni o'chirish
+            localStorage.removeItem(storageKey);
+            </text>
+        }
+        else
+        {
+            <text>
+            if (!token) {
+                document.getElementById('statusMessage').innerHTML = "Xatolik: Token topilmadi!";
+                document.getElementById('statusMessage').className = "alert alert-danger";
+            } else {
+                const connection = new signalR.HubConnectionBuilder()
+                    .withUrl("/hubs/nfc")
+                    .build();
+
+                connection.on("CustomerTurn", function (orderId) {
+                    if (orderId === navbatId) {
+                        const statusDiv = document.getElementById('statusMessage');
+                        statusDiv.className = 'status-box status-turn';
+                        statusDiv.innerHTML = '<strong>Sizning navbatingiz!</strong> Xaridni amalga oshiring.';
+                    }
+                });
+
+                connection.on("BonusIssued", function (orderId, message) {
+                    if (orderId === navbatId) {
+                        document.getElementById('statusMessage').style.display = 'none';
+                        const successDiv = document.getElementById('successMessage');
+                        successDiv.style.display = 'block';
+                        successDiv.innerHTML = '🎉 ' + (message || 'Bonuslar muvaffaqiyatli taqdim etildi!');
+                        
+                        showConfetti();
+                        
+                        localStorage.removeItem(storageKey);
+                        
+                        // Action qutisini ko'rsatish
+                        document.getElementById('bonusActionBox').style.display = 'block';
+                    }
+                });
+
+                connection.start().then(function () {
+                    connection.invoke("JoinOrderGroup", navbatId, token).catch(function (err) {
+                        console.error("Token xato yoki muddati tugagan:", err);
+                        document.getElementById('statusMessage').innerHTML = "Ruxsat etilmadi (xato token).";
+                    });
+                }).catch(function (err) {
+                    console.error(err.toString());
+                });
+            }
+            </text>
+        }
+    </script>
+</body>
+</html>
