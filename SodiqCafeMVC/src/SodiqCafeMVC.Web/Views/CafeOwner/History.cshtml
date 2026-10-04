@@ -29,11 +29,17 @@
                     </tr>
                 </thead>
                 <tbody>
+                    @{
+                        var todaysRewards = ViewBag.TodaysRewards as List<SodiqCafeMVC.Domain.Entities.UserReward> ?? new List<SodiqCafeMVC.Domain.Entities.UserReward>();
+                    }
                     @if (Model != null && Model.Any())
                     {
                         foreach (var req in Model)
                         {
-                            <tr>
+                            // A reward is considered matching if it has the same UserId and was earned within 1 minute of the request completion time
+                            var matchedRewards = todaysRewards.Where(r => r.UserId == req.UserId && req.CompletedAt.HasValue && Math.Abs((r.EarnedAt - req.CompletedAt.Value).TotalMinutes) < 2).ToList();
+                            
+                            <tr class="@(matchedRewards.Any() ? "table-success" : "")">
                                 <td class="px-4 fw-bold">#@req.DailyOrderNumber</td>
                                 <td>
                                     @if (req.User != null)
@@ -65,7 +71,18 @@
                                     <div class="fw-bold">@(req.CompletedAt?.ToLocalTime().ToString("HH:mm") ?? "-")</div>
                                 </td>
                                 <td class="px-4 text-end">
-                                    <span class="badge bg-success rounded-pill px-3 py-2">Yakunlangan</span>
+                                    @if (matchedRewards.Any())
+                                    {
+                                        <div class="mb-1">
+                                            @foreach (var reward in matchedRewards)
+                                            {
+                                                <span class="badge bg-success bg-opacity-75 rounded-pill mb-1">
+                                                    <i class="bi bi-gift-fill me-1"></i> @reward.BonusCampaign.Name
+                                                </span>
+                                            }
+                                        </div>
+                                    }
+                                    <span class="badge bg-secondary bg-opacity-25 text-dark rounded-pill px-3 py-1 border border-secondary border-opacity-25">Yakunlangan</span>
                                 </td>
                             </tr>
                         }

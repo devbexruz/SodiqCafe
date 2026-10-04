@@ -99,7 +99,13 @@ namespace SodiqCafeMVC.Web.Controllers
                 .Where(p => p.IsDefaultTemplate)
                 .ToListAsync();
 
+            var activeBonuses = await _context.BonusCampaigns
+                .Where(b => b.CafeId == cafe.Id && b.IsActive && b.IsVisible)
+                .OrderByDescending(b => b.CreatedAt)
+                .ToListAsync();
+
             ViewBag.DefaultTemplates = defaultTemplates;
+            ViewBag.ActiveBonuses = activeBonuses;
 
             return View(products);
         }
@@ -616,6 +622,13 @@ namespace SodiqCafeMVC.Web.Controllers
                 .Where(sr => sr.CafeId == cafe.Id && sr.Status == SodiqCafeMVC.Domain.Enums.ServiceRequestStatus.Completed && sr.CreatedAt >= today)
                 .OrderByDescending(sr => sr.CompletedAt)
                 .ToListAsync();
+
+            var todaysRewards = await _context.UserRewards
+                .Include(ur => ur.BonusCampaign)
+                .Where(ur => ur.CafeId == cafe.Id && ur.EarnedAt >= today)
+                .ToListAsync();
+
+            ViewBag.TodaysRewards = todaysRewards;
 
             return View(history);
         }

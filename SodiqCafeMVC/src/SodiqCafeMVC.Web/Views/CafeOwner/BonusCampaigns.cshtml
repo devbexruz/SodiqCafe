@@ -4,109 +4,77 @@
     ViewData["Title"] = "Bonus E'lonlari (Aksiyalar)";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 class="fw-bold mb-1">🎁 Bonus E'lonlari (Aksiyalar)</h2>
-        <p class="text-muted mb-0">@ViewBag.CafeName kafesi uchun barcha turdagi bonuslarni boshqarish</p>
+<div class="mb-4">
+    <a href="/cafe-owner/products" class="btn btn-outline-secondary mb-3 rounded-pill px-3">
+        <i class="bi bi-arrow-left"></i> Menyuga qaytish
+    </a>
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold mb-1">🎁 Bonuslarni Boshqarish</h2>
+            <p class="text-muted mb-0">@ViewBag.CafeName kafesi uchun bonuslarni sozlash</p>
+        </div>
+        <button class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addCampaignModal">
+            <i class="bi bi-plus-lg"></i> Yangi Qo'shish
+        </button>
     </div>
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCampaignModal">
-        ➕ Yangi Aksiya Qo'shish
-    </button>
 </div>
 
 @if (TempData["SuccessMessage"] != null)
 {
-    <div class="alert alert-success alert-dismissible fade show shadow-sm rounded-3">
+    <div class="alert alert-success alert-dismissible fade show shadow-sm rounded-4 border-0 mb-4">
         @TempData["SuccessMessage"]
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 }
 
-<div class="card border-0 shadow-sm rounded-4">
-    <div class="card-body p-0">
-        @if (!Model.Any())
+@{
+    var activeBonuses = Model.Where(m => m.IsActive).ToList();
+    var pausedBonuses = Model.Where(m => !m.IsActive).ToList();
+}
+
+<div class="row">
+    <div class="col-12 mb-4">
+        <h5 class="fw-bold text-success mb-3"><i class="bi bi-play-circle-fill me-2"></i>Faol Bonuslar</h5>
+        @if (!activeBonuses.Any())
         {
-            <div class="text-center py-5 text-muted">
-                <i class="bi bi-gift fs-1 d-block mb-3"></i>
-                <p>Hozircha hech qanday bonus e'loni yo'q.</p>
+            <div class="card border-0 shadow-sm rounded-4 bg-light">
+                <div class="card-body text-center py-4 text-muted">
+                    Hozircha faol bonuslar yo'q
+                </div>
             </div>
         }
         else
         {
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-4">Aksiya Nomi</th>
-                            <th>Turi</th>
-                            <th>Sharti (Qiymat)</th>
-                            <th>Mukofot</th>
-                            <th>Ko'rinishi</th>
-                            <th>Holati</th>
-                            <th class="text-end pe-4">Amallar</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model)
-                        {
-                            var typeName = ((System.ComponentModel.DataAnnotations.DisplayAttribute?)item.Type.GetType().GetField(item.Type.ToString()!)?.GetCustomAttributes(typeof(System.ComponentModel.DataAnnotations.DisplayAttribute), false).FirstOrDefault())?.Name ?? item.Type.ToString();
-                            
-                            <tr>
-                                <td class="ps-4 fw-bold">
-                                    @item.Name
-                                    @if (!string.IsNullOrEmpty(item.Description))
-                                    {
-                                        <div class="small text-muted fw-normal">@item.Description</div>
-                                    }
-                                </td>
-                                <td><span class="badge bg-light text-dark border">@typeName</span></td>
-                                <td><span class="badge bg-info text-dark">@item.ConditionValue</span></td>
-                                <td class="text-success fw-bold">@item.RewardDescription</td>
-                                <td>
-                                    @if (item.IsVisible)
-                                    {
-                                        <span class="badge bg-success bg-opacity-10 text-success"><i class="bi bi-eye"></i> Mijozga ko'rinadi</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-secondary bg-opacity-10 text-secondary"><i class="bi bi-eye-slash"></i> Yashirin</span>
-                                    }
-                                </td>
-                                <td>
-                                    @if (item.IsActive)
-                                    {
-                                        <span class="badge bg-success">Faol</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-danger">To'xtatilgan</span>
-                                    }
-                                </td>
-                                <td class="text-end pe-4">
-                                    <div class="d-flex justify-content-end gap-2">
-                                        <form asp-action="ToggleBonusCampaignActive" method="post">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="campaignId" value="@item.Id" />
-                                            @if (item.IsActive)
-                                            {
-                                                <button type="submit" class="btn btn-sm btn-outline-warning" title="To'xtatish"><i class="bi bi-pause-fill"></i></button>
-                                            }
-                                            else
-                                            {
-                                                <button type="submit" class="btn btn-sm btn-outline-success" title="Faollashtirish"><i class="bi bi-play-fill"></i></button>
-                                            }
-                                        </form>
-                                        <form asp-action="DeleteBonusCampaign" method="post" onsubmit="return confirm('Ushbu e\'lonni haqiqatan ham o\'chirasizmi? (Bog\'liq progresslar ham o\'chib ketishi mumkin!)');">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="campaignId" value="@item.Id" />
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="O'chirish"><i class="bi bi-trash"></i></button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+            <div class="row g-3">
+                @foreach (var item in activeBonuses)
+                {
+                    <div class="col-12 col-md-6 col-lg-4">
+                        @await Html.PartialAsync("_BonusCardPartial", item)
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="col-12 mb-4">
+        <h5 class="fw-bold text-warning mb-3"><i class="bi bi-pause-circle-fill me-2"></i>To'xtatilgan Bonuslar</h5>
+        @if (!pausedBonuses.Any())
+        {
+            <div class="card border-0 shadow-sm rounded-4 bg-light">
+                <div class="card-body text-center py-4 text-muted">
+                    Hozircha to'xtatilgan bonuslar yo'q
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="row g-3">
+                @foreach (var item in pausedBonuses)
+                {
+                    <div class="col-12 col-md-6 col-lg-4">
+                        @await Html.PartialAsync("_BonusCardPartial", item)
+                    </div>
+                }
             </div>
         }
     </div>

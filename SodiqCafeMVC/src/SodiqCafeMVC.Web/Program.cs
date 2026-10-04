@@ -25,6 +25,17 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddScoped<ICookieService, CookieService>();
 builder.Services.AddHttpContextAccessor();
 
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 // SignalR
 builder.Services.AddSignalR();
 
@@ -58,6 +69,13 @@ builder.Services.AddAuthentication(options =>
         // HttpOnly cookiedan yoki QueryStringdan (SignalR uchun) token olish
         OnMessageReceived = context =>
         {
+            var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+            if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Token = authHeader.Substring("Bearer ".Length).Trim();
+                return Task.CompletedTask;
+            }
+
             var accessToken = context.Request.Query["access_token"];
             var path = context.HttpContext.Request.Path;
             if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs/nfc"))
@@ -95,7 +113,11 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 builder.Services.AddControllers()
-    .AddNewtonsoftJson();
+    .AddNewtonsoftJson(options => 
+    {
+        options.SerializerSettings.ContractResolver = new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver();
+        options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+    });
 
 var app = builder.Build();
 
@@ -118,6 +140,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
+
+app.UseCors("AllowAll");
 
 // HttpOnly Cookie orqali tokenni avtomatik yangilash middleware
 app.UseMiddleware<TokenRefreshMiddleware>();
